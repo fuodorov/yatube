@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %} Записи сообщества {{ group.title }} {% endblock %}
+{% block title %}Записи сообщества{{ group.title }}{% endblock %}
 
 {% block content %}
     <h1>{{ group.title }}</h1>
@@ -11,6 +11,6 @@
         Автор: {{ post.author.get_full_name }}, Дата публикации: {{ post.pub_date|date:"d M Y" }}
     </h3>
     <p>{{ post.text|linebreaksbr }}</p>
-    {% if not forloop.last %}<hr>{% endif %}
+    <hr>
     {% endfor %}
 {% endblock %}
