@@ -1,14 +1,32 @@
-<nav class="navbar navbar-light" style="background-color: #e3f2fd;">
+<style>
+    nav {
+      background-color: #fff;
+    }
+
+    a {
+    	text-decoration: none;
+    	color: #000;
+    }
+
+    a:hover {
+      text-decoration: none;
+    	color: red;
+    	transition: 0.5s;
+    }
+
+</style>
+
+<nav class="navbar navbar-light">
     <a class="navbar-brand" href="/"><span style="color:red">Ya</span>tube</a>
     <nav class="my-2 my-md-0 mr-md-3">
         {% if user.is_authenticated %}
-            Пользователь: {{ user.username }}
-            <a class="p-2 text-dark" href="{% url 'new_post' %}">Новая запись</a>
-            <a class="p-2 text-dark" href="{% url 'password_change' %}">Изменить пароль</a>
-            <a class="p-2 text-dark" href="{% url 'logout' %}">Выйти</a>
+            {{ user.username }} |
+            <a href="{% url 'new_post' %}">Новая запись</a> |
+            <a href="{% url 'password_change' %}">Изменить пароль</a> |
+            <a href="{% url 'logout' %}">Выйти</a>
         {% else %}
-            <a class="p-2 text-dark" href="{% url 'login' %}">Войти</a> |
-            <a class="p-2 text-dark" href="{% url 'signup' %}">Регистрация</a>
+            <a href="{% url 'login' %}">Войти</a> |
+            <a href="{% url 'signup' %}">Регистрация</a>
         {% endif %}
     </nav>
 </nav>

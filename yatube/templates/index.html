@@ -3,12 +3,29 @@
 {% block header %}Последние обновления на сайте{% endblock %}
 {% block content %}
 
-    {% for post in posts %}
-    <h3>
-        Автор: {{ post.author.get_full_name }}, Дата публикации: {{ post.pub_date|date:"d M Y" }}
-    </h3>
-    <p>{{ post.text|linebreaksbr }}</p>
-    {% if not forloop.last %}<hr>{% endif %}
-    {% endfor %}
+<style>
+    .center {
+      width: 70%;
+      margin: auto;
+    }
 
-{% endblock %} 
+    .right {
+     text-align: right;
+    }
+</style>
+
+<body>
+    {% for post in posts %}
+    <div class="center">
+    <h4>
+        {{ post.author.get_full_name }}
+    </h4>
+    <p>{{ post.text|linebreaksbr }}</p>
+    <h6 class="right">
+        {{ post.pub_date|date:"d M Y" }}
+    </h6>
+    {% if not forloop.last %}<hr>{% endif %}
+    </div>
+    {% endfor %}
+</body>
+{% endblock %}
