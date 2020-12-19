@@ -12,15 +12,14 @@
 </head>
 
 <body>
-
+    {% include 'nav.html' %}
     <main>
         <div class="container">
-            {% block header %}<h1>The Last Social Media You'll Ever Need</h1>{% endblock %}
             {% block content %}
-            {% endblock %}
+            {% endblock content %}
         </div>
     </main>
-
+    {% include 'footer.html' %}
 </body>
 
 </html>
