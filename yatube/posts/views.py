@@ -25,4 +25,4 @@ def new_post(request):
             post.author = request.user
             post.save()
             return redirect("index")
-    return render(request, "new_post.html", {"form": form})
+    return render(request, "posts/new_post.html", {"form": form})
