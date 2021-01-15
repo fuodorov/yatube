@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "include/base.html" %}
 {% block title %}Последние обновления на сайте{% endblock %}
 {% block header %}Последние обновления на сайте{% endblock %}
 {% block content %}
@@ -28,6 +28,6 @@
     </div>
     {% endfor %}
 
-    {% include "paginator.html" %}
+    {% include "include/paginator.html" %}
 </body>
 {% endblock %}
