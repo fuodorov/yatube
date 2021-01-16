@@ -1,0 +1,23 @@
+<div class="card mb-3 mt-1 shadow-sm">
+    <div class="card-body">
+        <p class="card-text">
+        <a href="{% url 'profile' post.author %}"><strong class="d-block text-gray-dark">@{{ post.author }}</strong></a>
+		<p>{{ post.text|linebreaksbr }}</p>
+		{% if post.group %}
+		<a class="card-link muted" href="{% url 'group' post.group.slug %}">
+			<strong class="d-block text-gray-dark">#{{ post.group.title }}</strong>
+		</a>
+		{% endif %}
+		<hr>
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="btn-group">
+			<div>
+			{% if user == post.author %}
+                <a class="btn btn-sm text-muted" href="{% url 'post_edit' post.author post.id %}" role="button">Редактировать</a>
+			{% endif %}
+			</div>
+            </div>
+            <small class="text-muted">{{ post.pub_date|date:"d M Y г. H:i" }}</small>
+        </div>
+    </div>
+</div>

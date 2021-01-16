@@ -3,31 +3,14 @@
 {% block header %}Последние обновления на сайте{% endblock %}
 {% block content %}
 
-<style>
-    .center {
-      width: 70%;
-      margin: auto;
-    }
-
-    .right {
-     text-align: right;
-    }
-</style>
-
-<body>
+{% load cache %}
+{% cache 20 index_page %}
     {% for post in page %}
-    <div class="center">
-    <h4>
-        {{ post.author.get_full_name }}
-    </h4>
-    <p>{{ post.text|linebreaksbr }}</p>
-    <h6 class="right">
-        {{ post.pub_date|date:"d M Y" }}
-    </h6>
-    <hr>
-    </div>
+	   {% include "posts/include/post_item.html" with post=post %}
     {% endfor %}
+{% endcache %}
 
-    {% include "include/paginator.html" %}
-</body>
+{% if page.has_other_pages %}
+        {% include "include/paginator.html" with items=page paginator=paginator %}
+    {% endif %}
 {% endblock %}
