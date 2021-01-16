@@ -131,3 +131,4 @@ dmypy.json
 
 sent_emails/
 static/
+media/

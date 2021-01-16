@@ -70,15 +70,6 @@ class StaticURLTests(TestCase):
                 self.assertTemplateUsed(response, template,
                                         f"Шаблон {template} не работает")
 
-    def test_guest_redirect(self):
-        for page, template in self.list_pages_client.items():
-            with self.subTest(url=page):
-                response = self.client.get(page, follow=True)
-                login_page = reverse("login")
-                self.assertRedirects(
-                    response, (f'{login_page}?next={page}')
-                )
-
     def test_404(self):
         for page, template in self.list_pages_guest.items():
             with self.subTest(url=page):
