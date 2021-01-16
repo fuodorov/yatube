@@ -14,7 +14,6 @@ ALLOWED_HOSTS = [
     "testserver",
 ]
 
-# Application definition
 SITE_ID = 1
 
 INSTALLED_APPS = [

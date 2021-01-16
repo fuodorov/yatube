@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from posts import constants
 
 from .models import Post, Group, User
-from .forms import PostForm
+from .forms import PostForm, CommentForm
 
 
 def index(request):
@@ -104,3 +104,21 @@ def page_404(request, exception):
 
 def page_500(request):
     return render(request, "misc/500.html", status=500)
+
+
+@login_required
+def add_comment(request, username, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    form = CommentForm(request.POST or None)
+    comments = post.comments.all()
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.author = request.user
+        comment.post = post
+        form.save()
+        return redirect("post", username=username, post_id=post_id)
+    return render(
+        request,
+        "posts/include/comment.html",
+        {"form": form, "comments": comments}
+    )
