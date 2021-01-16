@@ -22,13 +22,11 @@ class StaticURLTests(TestCase):
         cls.list_pages_client = {
             reverse("new_post"): "posts/new_post.html",
             reverse("post_edit", args=[cls.user, 1]): "posts/new_post.html",
-            reverse("profile", args=[cls.user]): "posts/profile.html",
-            reverse("about:author"): "about/author.html",
-            reverse("about:tech"): "about/tech.html"
         }
         cls.list_pages_guest = {
             reverse("index"): "index.html",
             reverse("post", args=[cls.user, 1]): "posts/post.html",
+            reverse("profile", args=[cls.user]): "posts/profile.html",
             reverse("group",
                     kwargs={"slug": cls.group.slug}): "posts/group.html",
             reverse("about:author"): "about/author.html",
@@ -67,6 +65,12 @@ class StaticURLTests(TestCase):
                 response = self.authorized_user.get(page)
                 self.assertTemplateUsed(response, template,
                                         f"Шаблон {template} не работает")
+
+    def test_guest_redirect(self):
+        for page, template in self.list_pages_client.items():
+            with self.subTest(url=page):
+                response = self.guest_client.get(page)
+                self.assertEqual(response.status_code, 302)
 
     def test_404(self):
         for page, template in self.list_pages_guest.items():
