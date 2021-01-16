@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+from posts import constants
+
 User = get_user_model()
 
 
@@ -59,7 +61,7 @@ class Post(models.Model):
         ordering = ("-pub_date", )
 
     def __str__(self):
-        return self.text[:15]
+        return self.text[:constants.letters_per_str]
 
 
 class Comment(models.Model):
@@ -86,7 +88,4 @@ class Comment(models.Model):
         ordering = ("-created", )
 
     def __str__(self):
-        date = self.created
-        author = self.author
-        text = self.text[:20]
-        return f"{author} - {date:%d-%m-%Y} - {text} ..."
+        return self.text[:constants.letters_per_str]
