@@ -1,16 +1,15 @@
 {% extends "include/base.html" %}
-{% block title %}Записи сообщества {{ group.title }}{% endblock %}
+{% block title %}Записи сообщества {{ group }}{% endblock %}
+{% block header %}{{ group }}{% endblock %}
 
 {% block content %}
-    <h1>{{ group.title }}</h1>
-    <p>
-        {{ group.description }}
-    </p>
-    {% for post in posts %}
-    <h3>
-        Автор: {{ post.author.get_full_name }}, Дата публикации: {{ post.pub_date|date:"d M Y" }}
-    </h3>
-    <p>{{ post.text|linebreaksbr }}</p>
-    <hr>
-    {% endfor %}
+  <p>{{ group.description|linebreaksbr }}</p>
+  {% for post in page %}
+	{% include "posts/include/post_item.html" with post=post %}
+  {% endfor %}
+
+  {% if page.has_other_pages %}
+    {% include "include/paginator.html" with items=page paginator=paginator %}
+  {% endif %}
+
 {% endblock %}
