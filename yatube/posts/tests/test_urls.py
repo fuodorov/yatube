@@ -1,46 +1,44 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from django.urls import reverse
 
-from ..models import Group, Post, User
+from ..models import Group, Post
 
 
 class StaticURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user1 = User.objects.create(
-            username="eva",
-            first_name="eva",
-            last_name="eva"
-        )
-        cls.user2 = User.objects.create(
-            username="bob",
-            first_name="bob",
-            last_name="bob"
-        )
+        cls.user = get_user_model().objects.create_user(username="Leo")
         cls.group = Group.objects.create(
-            title="Заголовок",
-            slug="test_slug",
-            description="Текст"
+            title="Заголовок группы",
+            slug="test",
+            description="Тестовый текст"
         )
         cls.post = Post.objects.create(
-            text="Текст",
-            author=cls.user1,
-            group=cls.group
+            author=cls.user,
+            text="Тестовый текст"
         )
-        cls.guest_client = Client()
-        cls.creator_user = Client()
-        cls.creator_user.force_login(cls.user1)
-        cls.authorized_user = Client()
-        cls.authorized_user.force_login(cls.user2)
         cls.list_pages_client = {
             reverse("new_post"): "posts/new_post.html",
+            reverse("post_edit", args=[cls.user, 1]): "posts/new_post.html",
+            reverse("profile", args=[cls.user]): "posts/profile.html",
+            reverse("about:author"): "about/author.html",
+            reverse("about:tech"): "about/tech.html"
         }
         cls.list_pages_guest = {
             reverse("index"): "index.html",
+            reverse("post", args=[cls.user, 1]): "posts/post.html",
             reverse("group",
                     kwargs={"slug": cls.group.slug}): "posts/group.html",
+            reverse("about:author"): "about/author.html",
+            reverse("about:tech"): "about/tech.html"
         }
+
+    def setUp(self) -> None:
+        self.guest_client = Client()
+        self.authorized_user = Client()
+        self.authorized_user.force_login(self.user)
 
     def test_pages_guest(self):
         for page, template in self.list_pages_guest.items():
