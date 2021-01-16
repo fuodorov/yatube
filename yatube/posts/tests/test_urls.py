@@ -33,7 +33,7 @@ class StaticURLTests(TestCase):
             reverse("about:tech"): "about/tech.html"
         }
 
-    def setUp(self) -> None:
+    def setUp(self):
         self.guest_client = Client()
         self.authorized_user = Client()
         self.authorized_user.force_login(self.user)
