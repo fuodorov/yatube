@@ -10,7 +10,7 @@ from .models import Follow, Group, Post, User
 
 def index(request):
     post_list = Post.objects.select_related("group")
-    paginator = Paginator(post_list, constants.posts_per_page)
+    paginator = Paginator(post_list, POSTS_PER_PAGE)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
     return render(
@@ -23,7 +23,7 @@ def index(request):
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
     posts = group.posts.all()
-    paginator = Paginator(posts, constants.posts_per_page)
+    paginator = Paginator(posts, POSTS_PER_PAGE)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
     return render(
@@ -47,7 +47,7 @@ def new_post(request):
 def profile(request, username):
     author = get_object_or_404(User, username=username)
     posts = author.posts.all()
-    paginator = Paginator(posts, constants.posts_per_page)
+    paginator = Paginator(posts, POSTS_PER_PAGE)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
     try:
@@ -147,7 +147,7 @@ def add_comment(request, username, post_id):
 @login_required
 def follow_index(request):
     post_list = Post.objects.filter(author__following__user=request.user)
-    paginator = Paginator(post_list, constants.posts_per_page)
+    paginator = Paginator(post_list, POSTS_PER_PAGE)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
     return render(

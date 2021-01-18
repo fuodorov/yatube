@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import reverse
 from django.test import Client, TestCase
 
-from posts import constants
+from posts.constants import POSTS_PER_PAGE
 
 from ..models import Group, Post
 
@@ -107,7 +107,7 @@ class PaginatorViewsTest(TestCase):
             slug="test",
             description="Тестовый текст"
         )
-        for i in range(2*constants.posts_per_page):
+        for i in range(2*POSTS_PER_PAGE):
             Post.objects.create(
                 text=f"тестовый текст {i}",
                 author=cls.user,
@@ -121,12 +121,12 @@ class PaginatorViewsTest(TestCase):
         response = self.guest_client.get(reverse("index"))
         self.assertEqual(
             len(response.context.get("page").object_list),
-            constants.posts_per_page
+            POSTS_PER_PAGE
         )
 
     def test_paginator_second_page(self):
         response = self.guest_client.get(reverse("index") + "?page=2")
         self.assertEqual(
             len(response.context.get("page").object_list),
-            constants.posts_per_page
+            POSTS_PER_PAGE
         )

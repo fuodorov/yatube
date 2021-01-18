@@ -1,2 +1,2 @@
-posts_per_page = 10
-letters_per_str = 15
+POSTS_PER_PAGE = 10
+LETTERS_PER_STR = 15

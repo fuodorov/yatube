@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from posts import constants
+from posts.constants import LETTERS_PER_STR
 
 User = get_user_model()
 
@@ -61,7 +61,7 @@ class Post(models.Model):
         ordering = ("-pub_date", )
 
     def __str__(self):
-        return self.text[:constants.letters_per_str]
+        return self.text[:LETTERS_PER_STR]
 
 
 class Comment(models.Model):
@@ -88,7 +88,7 @@ class Comment(models.Model):
         ordering = ("-created", )
 
     def __str__(self):
-        return self.text[:constants.letters_per_str]
+        return self.text[:LETTERS_PER_STR]
 
 
 class Follow(models.Model):
