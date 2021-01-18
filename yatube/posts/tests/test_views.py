@@ -1,10 +1,11 @@
-from django.test import TestCase, Client
+from django import forms
 from django.contrib.auth import get_user_model
 from django.shortcuts import reverse
-from django import forms
+from django.test import Client, TestCase
+
 from posts import constants
 
-from ..models import Post, Group
+from ..models import Group, Post
 
 
 class ViewContentTest(TestCase):
