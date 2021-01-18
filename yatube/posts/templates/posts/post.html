@@ -5,12 +5,11 @@
 {% block content %}
 <main role="main" class="container">
     <div class="row">
-	    {% include 'posts/include/author_card.html' %}
-        <div class="col-md-9">
-			{% include 'posts/include/post_item.html' with post=post %}
-      {% include 'posts/include/comment.html' %}
-        </div>
+      {% include 'posts/include/author_card.html' %}
+      <div class="col-md-9">
+        {% include 'posts/include/post_item.html' with post=post %}
+        {% include 'posts/include/comment.html' %}
+      </div>
     </div>
 </main>
-
 {% endblock %}
