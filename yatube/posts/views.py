@@ -9,7 +9,7 @@ from .models import Follow, Group, Post, User
 
 
 def index(request):
-    post_list = Post.objects.select_related("group").order_by("-pub_date")
+    post_list = Post.objects.select_related("group")
     paginator = Paginator(post_list, constants.posts_per_page)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
