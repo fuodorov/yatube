@@ -84,12 +84,16 @@ def post_view(request, username, post_id):
 
 @login_required
 def post_edit(request, username, post_id):
+    current_user = request.user
     post = get_object_or_404(
         Post,
         author=request.user,
         author__username=username,
         pk=post_id
     )
+    author_user = post.author
+    if current_user != author_user:
+        return redirect("index")
     form = PostForm(
         request.POST or None,
         files=request.FILES or None,
