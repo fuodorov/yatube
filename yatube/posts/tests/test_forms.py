@@ -36,7 +36,7 @@ class PostFormTests(TestCase):
         )
         self.assertEqual(Post.objects.count(), posts_count+1)
         self.assertEqual(response.status_code, 302)
-        last_object = Post.objects.filter().order_by("-id")[0]
+        last_object = Post.objects.last()
         self.assertEqual(last_object.text, form_data["text"])
         self.assertEqual(last_object.group, self.test_group)
         self.assertEqual(last_object.author, self.test_user)
