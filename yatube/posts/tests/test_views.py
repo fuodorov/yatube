@@ -24,17 +24,17 @@ class ViewContentTest(TestCase):
             description="Тестовый текст"
         )
         cls.small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x02\x00'
-            b'\x01\x00\x80\x00\x00\x00\x00\x00'
-            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-            b'\x0A\x00\x3B'
+            b"\x47\x49\x46\x38\x39\x61\x02\x00"
+            b"\x01\x00\x80\x00\x00\x00\x00\x00"
+            b"\xFF\xFF\xFF\x21\xF9\x04\x00\x00"
+            b"\x00\x00\x00\x2C\x00\x00\x00\x00"
+            b"\x02\x00\x01\x00\x00\x02\x02\x0C"
+            b"\x0A\x00\x3B"
         )
         cls.uploaded = SimpleUploadedFile(
-            name='small.gif',
+            name="small.gif",
             content=cls.small_gif,
-            content_type='image/gif'
+            content_type="image/gif"
         )
         cls.post = Post.objects.create(
             author=cls.user,
@@ -120,6 +120,21 @@ class ViewContentTest(TestCase):
         response = self.authorized_user.get(
             reverse("group", args=[self.group.slug]))
         self.assertContains(response, new_post)
+
+    def test_cache_index_page(self):
+        response_before = self.authorized_user.get(reverse("index"))
+        page_before_clear_cache = response_before.content
+        post = Post.objects.latest("id")
+        post.text = "Update" + post.text
+        post.save()
+        response_before = self.authorized_user.get(reverse("index"))
+        page_before_clear_cache_refresh = response_before.content
+        self.assertEqual(page_before_clear_cache,
+                         page_before_clear_cache_refresh)
+        cache.clear()
+        response_after = self.authorized_user.get(reverse("index"))
+        page_after_clear_cache = response_after.content
+        self.assertNotEqual(page_before_clear_cache, page_after_clear_cache)
 
 
 class PaginatorViewsTest(TestCase):
