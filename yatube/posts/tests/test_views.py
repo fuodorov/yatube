@@ -10,7 +10,7 @@ from django.test import Client, TestCase
 
 from posts.constants import POSTS_PER_PAGE
 
-from ..models import Group, Post
+from ..models import Comment, Follow, Group, Post, User
 
 
 class ViewContentTest(TestCase):
@@ -170,3 +170,118 @@ class PaginatorViewsTest(TestCase):
             len(response.context.get("page").object_list),
             POSTS_PER_PAGE
         )
+
+
+class FollowTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.unfollow_user = User.objects.create(
+            username="unfollow_username",
+            email="unfollow_username@testmail.com",
+        )
+        cls.user = User.objects.create(
+            username="test_username",
+            email="test_username@testmail.com",
+        )
+        cls.author = User.objects.create(
+            username="test_author",
+            email="test_author@testmail.com",
+        )
+        cls.group = Group.objects.create(
+            title="Тестовое сообщество",
+            slug="test-slug",
+            description="test description"
+        )
+        cls.post = Post.objects.create(
+            text="Заголовок тестовой записи",
+            author=cls.author,
+            group=cls.group,
+        )
+        cls.post_id = cls.post.id
+
+    def setUp(self):
+        self.authorized_client = Client()
+        self.authorized_client.force_login(FollowTests.user)
+        self.authorized_unfollow_client = Client()
+        self.authorized_unfollow_client.force_login(FollowTests.unfollow_user)
+        self.guest_client = Client()
+        cache.clear()
+
+    def test_client_follow_users(self):
+        followers_before = Follow.objects.filter(
+            author=FollowTests.author).count()
+        self.authorized_client.post(
+            reverse("profile_follow", kwargs={"username": FollowTests.author}))
+        followers_after = Follow.objects.filter(
+            author=FollowTests.author).count()
+
+        self.assertEqual(followers_before + 1, followers_after)
+
+    def test_client_unfollow_users(self):
+        followers_before = Follow.objects.filter(
+            author=FollowTests.author).count()
+        self.authorized_client.post(
+            reverse("profile_follow", kwargs={"username": FollowTests.author}))
+        self.authorized_client.post(
+            reverse("profile_unfollow",
+                    kwargs={"username": FollowTests.author}))
+        followers_after_delete = Follow.objects.filter(
+            author=FollowTests.author).count()
+        self.assertEqual(followers_before, followers_after_delete)
+
+    def test_new_post_followers(self):
+        Follow.objects.create(
+            user=FollowTests.user,
+            author=FollowTests.author
+        )
+        response_follower = self.authorized_client.get(
+            reverse("follow_index"))
+        page_before_new_post = len(response_follower.context.get("page"))
+        Post.objects.create(
+            text="Новый пост от автора",
+            author=FollowTests.author
+        )
+        cache.clear()
+        response_follower = self.authorized_client.get(
+            reverse("follow_index"))
+        page_after_new_post = len(response_follower.context.get("page"))
+        self.assertEqual(page_before_new_post + 1, page_after_new_post)
+
+    def test_new_post_unfollowers(self):
+        Follow.objects.create(
+            user=FollowTests.user,
+            author=FollowTests.author
+        )
+        response_unfollow = self.authorized_unfollow_client.get(
+            reverse("follow_index"))
+        page_unfollow_user_before = response_unfollow.content
+        Post.objects.create(
+            text="Новый пост от автора",
+            author=FollowTests.author
+        )
+        cache.clear()
+        response_unfollow = self.authorized_unfollow_client.get(
+            reverse("follow_index"))
+        page_unfollow_user_after = response_unfollow.content
+        self.assertEqual(page_unfollow_user_before, page_unfollow_user_after)
+
+    def test_client_comment_on_posts(self):
+        form_data = {
+            "text": "test_text",
+            "author": FollowTests.user,
+            "post": FollowTests.post,
+        }
+        comments_count_before = Comment.objects.count()
+        self.authorized_client.post(
+            reverse("add_comment", kwargs={
+                "username": FollowTests.post.author.username,
+                "post_id": FollowTests.post_id
+            }), data=form_data, follow=True, )
+        self.guest_client.post(
+            reverse("add_comment", kwargs={
+                "username": FollowTests.post.author.username,
+                "post_id": FollowTests.post_id
+            }), data=form_data, follow=True, )
+        comments_count_after = Comment.objects.count()
+        self.assertEqual(comments_count_before + 1, comments_count_after)
