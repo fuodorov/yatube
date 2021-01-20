@@ -19,7 +19,7 @@ class TestModelGroup(TestCase):
         group_field = self.group
         field_verbose = {
             "title": "Название группы: ",
-            "slug": "Адрес в интернете: ",
+            "slug": "Ключ для составления адреса: ",
             "description": "Информация об авторе: "
         }
         for value, expect in field_verbose.items():
@@ -88,7 +88,8 @@ class TestModelPost(TestCase):
         field_verbose = {
             "text": "Напишите здесь текст заметки.",
             "author": "Это пользователь, опубликовавший заметку.",
-            "group": "Выберите группу, к которой будет принадлежать пост."
+            "group": ("Можете выбрать группу, "
+                      "к которой будет принадлежать пост.")
         }
         for value, expected in field_verbose.items():
             with self.subTest(value=value):
