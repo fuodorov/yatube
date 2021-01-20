@@ -13,7 +13,7 @@ class Group(models.Model):
         help_text="Напишите название группы."
     )
     slug = models.SlugField(
-        verbose_name="Адрес в интернете: ",
+        verbose_name="Ключ для составления адреса: ",
         max_length=100,
         unique=True,
         help_text="Укажите адрес сообщества в интернете."
