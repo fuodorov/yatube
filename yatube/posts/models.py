@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from posts.constants import LETTERS_PER_STR
+from posts.settings import LETTERS_PER_STR
 
 User = get_user_model()
 

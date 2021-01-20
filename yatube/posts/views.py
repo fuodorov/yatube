@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
-from posts.constants import POSTS_PER_PAGE
+from posts.settings import POSTS_PER_PAGE
 
 from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post, User

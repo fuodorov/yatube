@@ -8,7 +8,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.shortcuts import reverse
 from django.test import Client, TestCase
 
-from posts.constants import POSTS_PER_PAGE
+from posts.settings import POSTS_PER_PAGE
 
 from ..models import Comment, Follow, Group, Post, User
 
