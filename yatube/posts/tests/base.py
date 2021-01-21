@@ -5,6 +5,7 @@ from django.conf import settings
 from django.test import Client, TestCase
 from django.urls import reverse
 
+from posts.forms import PostForm
 from posts.models import Group, Post, User
 from posts.settings import POSTS_PER_PAGE
 
@@ -55,6 +56,7 @@ class BaseTestCase(TestCase):
             slug=SECOND_GROUP_SLUG,
             description=SECOND_GROUP_DESCRIPTION
         )
+        cls.form = PostForm()
         cls.posts = [
             Post.objects.create(
                 text=f"{case}",
