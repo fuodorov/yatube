@@ -3,6 +3,7 @@ import shutil
 from collections import namedtuple
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse, reverse_lazy
@@ -142,3 +143,6 @@ class BaseTestCase(TestCase):
     def tearDownClass(cls):
         shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
         super().tearDownClass()
+
+    def setUp(self):
+        cache.clear()
