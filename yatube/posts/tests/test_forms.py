@@ -1,111 +1,93 @@
-from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
 from django.urls import reverse
 
-from ..forms import PostForm
-from ..models import Group, Post
+from posts.models import Comment, Post, Follow
+from posts.tests.base import (COMMENT_TEXT, FIRST_IMG_NAME, NEW_POST_URL,
+                              POST_TEXT, BaseTestCase)
 
-User = get_user_model()
 
-
-class PostFormTests(TestCase):
+class PostFormTests(BaseTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.form = PostForm()
-        cls.test_user = User.objects.create(
-            username="test_user"
-        )
-        cls.authorized_client = Client()
-        cls.authorized_client.force_login(cls.test_user)
-        cls.test_group = Group.objects.create(
-            title="Тестовое сообщество",
-            slug="test_group",
-            description="test_group",
+        cls.post = Post.objects.create(
+            text=POST_TEXT,
+            author=cls.user,
+            group=cls.first_group,
+            image=cls.uploaded_first_img
         )
 
-    def test_create_post(self):
-        posts_count = Post.objects.count()
+    def test_authorized_user_new_post(self):
         form_data = {
-            "text": "Создаем новую запись в группе",
-            "group": self.test_group.id,
+            "group": self.first_group.id,
+            "text": POST_TEXT,
+            "image": self.uploaded_first_img
         }
-        response = self.authorized_client.post(
-            reverse("new_post"),
-            data=form_data
-        )
-        self.assertEqual(Post.objects.count(), posts_count+1)
-        self.assertEqual(response.status_code, 302)
-        last_object = Post.objects.last()
-        self.assertEqual(last_object.text, form_data["text"])
-        self.assertEqual(last_object.group, self.test_group)
-        self.assertEqual(last_object.author, self.test_user)
-
-    def test_edit_post(self):
-        form_data_edit = {
-            "text": "Исправленный тестовый текст записи",
-            "group": self.test_group.id,
-        }
-        test_post = Post.objects.create(
-            text="Тестовый текст записи",
-            author=self.test_user,
-        )
-        kwargs = {'username': 'test_user', 'post_id': test_post.id}
-        response = self.authorized_client.post(
-            reverse('post_edit', kwargs=kwargs),
-            data=form_data_edit
-        )
-        test_post.refresh_from_db()
-        self.assertEqual(Post.objects.count(), 1)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(test_post.text, form_data_edit["text"])
-        self.assertEqual(test_post.group, self.test_group)
-        self.assertEqual(test_post.author, self.test_user)
-
-    def test_create_post_guest(self):
-        form_data = {
-            "text": "Гость пытается создать новую запись в группе",
-            "group": self.test_group.id,
-        }
-        response = self.client.post(
-            reverse("new_post"),
+        self.authorized_user.post(
+            NEW_POST_URL,
             data=form_data,
             follow=True
         )
-        self.assertEqual(Post.objects.count(), 0)
+        self.assertTrue(
+            Post.objects.filter(text=POST_TEXT).exists() and
+            Post.objects.filter(group=self.first_group.id).exists() and
+            FIRST_IMG_NAME in self.post.image.name
+        )
+
+    def test_guest_new_post(self):
+        cash_count = Post.objects.count()
+        form_data = {
+            "group": self.first_group.id,
+            "text": POST_TEXT,
+            "image": self.uploaded_first_img
+        }
+        response = self.guest.post(
+            NEW_POST_URL,
+            data=form_data,
+            follow=True
+        )
+        self.assertEqual(Post.objects.count(), cash_count)
         self.assertEqual(response.status_code, 200)
 
-    def test_edit_post_guest(self):
-        form_data_edit = {
-            "text": "Исправленный гостем текст записи",
-            "group": self.test_group.id,
-        }
-        test_post = Post.objects.create(
-            text="Тестовый текст записи",
-            author=self.test_user,
-            group=self.test_group,
+    def test_authorized_user_new_comment(self):
+        self.authorized_user.post(
+            reverse("add_comment", args=[self.user.username, self.post.id]),
+            {"text": COMMENT_TEXT},
+            follow=True
         )
-        test_post.refresh_from_db()
-        self.assertNotEqual(test_post.text, form_data_edit["text"])
-        self.assertEqual(test_post.group, self.test_group)
-        self.assertEqual(test_post.author, self.test_user)
+        self.assertTrue(Comment.objects.filter(text=COMMENT_TEXT).exists())
 
-    def test_edit_post_not_author(self):
-        form_data_edit = {
-            "text": "Исправленный не автором текст записи",
-            "group": self.test_group.id,
-        }
-        test_post = Post.objects.create(
-            text="Тестовый текст записи",
-            author=self.test_user,
-            group=self.test_group,
+    def test_edit_post(self):
+        self.authorized_user.post(
+            reverse("post_edit", args=[self.user.username, self.post.id]),
+            {"text": "not" + POST_TEXT, "group": self.second_group.id},
+            follow=True
         )
-        not_author_user = User.objects.create(
-            username="not_author"
+        self.post.refresh_from_db()
+        self.assertNotEqual(self.post.text, POST_TEXT)
+        self.assertNotEqual(self.post.group, self.first_group)
+
+    def test_not_author_edit_post(self):
+        self.authorized_follower.post(
+            reverse("post_edit", args=[self.user.username, self.post.id]),
+            {"text": "not" + POST_TEXT, "group": self.second_group.id},
+            follow=True
         )
-        not_author_client = Client()
-        not_author_client.force_login(not_author_user)
-        test_post.refresh_from_db()
-        self.assertNotEqual(test_post.text, form_data_edit["text"])
-        self.assertEqual(test_post.group, self.test_group)
-        self.assertEqual(test_post.author, self.test_user)
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.text, POST_TEXT)
+        self.assertEqual(self.post.group, self.first_group)
+
+    def test_guest_edit_post(self):
+        self.guest.post(
+            reverse("post_edit", args=[self.user.username, self.post.id]),
+            {"text": "not" + POST_TEXT, "group": self.second_group.id},
+            follow=True
+        )
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.text, POST_TEXT)
+        self.assertEqual(self.post.group, self.first_group)
+
+    def test_followed_authors_post_appears_in_follow_list(self):
+        Follow.objects.get_or_create(author=self.user, user=self.follower)
+        self.assertTrue(Follow.objects.filter(author=self.user).exists())
+        Follow.objects.filter(author=self.user, user=self.follower).delete()
+        self.assertFalse(Follow.objects.filter(author=self.user).exists())
