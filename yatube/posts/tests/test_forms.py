@@ -73,9 +73,3 @@ class PostFormTests(BaseTestCase):
         self.post.refresh_from_db()
         self.assertEqual(self.post.text, POST_TEXT)
         self.assertEqual(self.post.group, self.first_group)
-
-    def test_followed_authors_post_appears_in_follow_list(self):
-        Follow.objects.get_or_create(author=self.user, user=self.follower)
-        self.assertTrue(Follow.objects.filter(author=self.user).exists())
-        Follow.objects.filter(author=self.user, user=self.follower).delete()
-        self.assertFalse(Follow.objects.filter(author=self.user).exists())

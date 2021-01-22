@@ -9,7 +9,7 @@ from django.test import Client, TestCase
 from django.urls import reverse, reverse_lazy
 
 from posts.forms import PostForm
-from posts.models import Group, Post, User
+from posts.models import Follow, Group, Post, User
 
 FIRST_GROUP_NAME = "test-group-1"
 FIRST_GROUP_SLUG = "test-slug-1"
@@ -55,6 +55,14 @@ SECOND_IMG = (b"\x48\x49\x46\x38\x39\x61\x02\x00"
               b"\x02\x00\x01\x00\x00\x02\x02\x0C"
               b"\x0A\x00\x3B")
 
+Page = namedtuple("Page", {
+    "url",
+    "client",
+    "end_url",
+    "template",
+    "expected_code"
+})
+
 
 class BaseTestCase(TestCase):
     @classmethod
@@ -68,6 +76,7 @@ class BaseTestCase(TestCase):
         cls.authorized_user.force_login(cls.user)
         cls.authorized_follower = Client()
         cls.authorized_follower.force_login(cls.follower)
+        Follow.objects.get_or_create(author=cls.user, user=cls.follower)
         cls.first_group = Group.objects.create(
             title=FIRST_GROUP_NAME,
             slug=FIRST_GROUP_SLUG,
@@ -101,8 +110,6 @@ class BaseTestCase(TestCase):
                                     args=[cls.user.username, cls.post.id])
         cls.POST_URL = reverse("post", args=[cls.user.username, cls.post.id])
 
-        set = {"url", "client", "end_url", "template", "expected_code"}
-        Page = namedtuple("Page", set)
         cls.list_pages = [
             Page(INDEX_URL, cls.authorized_user, INDEX_URL,
                  "index.html", 200),
@@ -115,6 +122,10 @@ class BaseTestCase(TestCase):
                  "posts/group.html", 200),
             Page(FIRST_GROUP_URL, cls.guest, FIRST_GROUP_URL,
                  "posts/group.html", 200),
+            Page(FOLLOW_INDEX_URL, cls.authorized_follower,
+                 FOLLOW_INDEX_URL, "posts/follow.html", 200),
+            Page(FOLLOW_INDEX_URL, cls.guest,
+                 SIGNUP_URL, "registration/login.html", 302),
             Page(AUTHOR_URL, cls.authorized_user, AUTHOR_URL,
                  "about/author.html", 200),
             Page(AUTHOR_URL, cls.guest, AUTHOR_URL,
@@ -136,7 +147,7 @@ class BaseTestCase(TestCase):
             Page(NEW_POST_URL, cls.guest, SIGNUP_URL,
                  "registration/login.html", 302),
             Page(NOT_URL, cls.guest, PAGE_NOT_FOUND_URL,
-                 "misc/404.html", 404),
+                 "misc/404.html", 404)
         ]
 
     @classmethod
