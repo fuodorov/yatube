@@ -7,7 +7,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from posts.forms import PostForm
-from posts.models import Group, User
+from posts.models import Group, Post, User
 
 FIRST_GROUP_NAME = "test-group-1"
 FIRST_GROUP_SLUG = "test-slug-1"
@@ -84,6 +84,16 @@ class BaseTestCase(TestCase):
             content=SECOND_IMG,
             content_type="image/jpeg"
         )
+        cls.post = Post.objects.create(
+            text=POST_TEXT,
+            author=cls.user,
+            group=cls.first_group,
+            image=cls.uploaded_first_img
+        )
+        cls.ADD_COMMENT_URL = reverse("add_comment",
+                                      args=[cls.user.username, cls.post.id])
+        cls.POST_EDIT_URL = reverse("post_edit",
+                                    args=[cls.user.username, cls.post.id])
 
     @classmethod
     def tearDownClass(cls):

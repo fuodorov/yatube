@@ -1,21 +1,9 @@
-from django.urls import reverse
-
-from posts.models import Comment, Post, Follow
+from posts.models import Comment, Follow, Post
 from posts.tests.base import (COMMENT_TEXT, FIRST_IMG_NAME, NEW_POST_URL,
                               POST_TEXT, BaseTestCase)
 
 
 class PostFormTests(BaseTestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.post = Post.objects.create(
-            text=POST_TEXT,
-            author=cls.user,
-            group=cls.first_group,
-            image=cls.uploaded_first_img
-        )
-
     def test_authorized_user_new_post(self):
         form_data = {
             "group": self.first_group.id,
@@ -50,7 +38,7 @@ class PostFormTests(BaseTestCase):
 
     def test_authorized_user_new_comment(self):
         self.authorized_user.post(
-            reverse("add_comment", args=[self.user.username, self.post.id]),
+            self.ADD_COMMENT_URL,
             {"text": COMMENT_TEXT},
             follow=True
         )
@@ -58,7 +46,7 @@ class PostFormTests(BaseTestCase):
 
     def test_edit_post(self):
         self.authorized_user.post(
-            reverse("post_edit", args=[self.user.username, self.post.id]),
+            self.POST_EDIT_URL,
             {"text": "not" + POST_TEXT, "group": self.second_group.id},
             follow=True
         )
@@ -68,7 +56,7 @@ class PostFormTests(BaseTestCase):
 
     def test_not_author_edit_post(self):
         self.authorized_follower.post(
-            reverse("post_edit", args=[self.user.username, self.post.id]),
+            self.POST_EDIT_URL,
             {"text": "not" + POST_TEXT, "group": self.second_group.id},
             follow=True
         )
@@ -78,7 +66,7 @@ class PostFormTests(BaseTestCase):
 
     def test_guest_edit_post(self):
         self.guest.post(
-            reverse("post_edit", args=[self.user.username, self.post.id]),
+            self.POST_EDIT_URL,
             {"text": "not" + POST_TEXT, "group": self.second_group.id},
             follow=True
         )
