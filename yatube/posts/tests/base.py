@@ -1,10 +1,10 @@
+import os
 import shutil
-import tempfile
 
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 
 from posts.forms import PostForm
 from posts.models import Group, Post, User
@@ -23,6 +23,7 @@ FIRST_IMG_NAME = "img-1"
 SECOND_IMG_NAME = "img-2"
 
 INDEX_URL = reverse("index")
+SIGNUP_URL = reverse_lazy("login")
 NEW_POST_URL = reverse("new_post")
 FOLLOW_INDEX_URL = reverse("follow_index")
 AUTHOR_URL = reverse("about:author")
@@ -36,6 +37,8 @@ PROFILE_URL = reverse("profile", args=[USERNAME])
 FOLLOWER_URL = reverse("profile", args=[FOLLOWER])
 PROFILE_FOLLOW_URL = reverse("profile_follow", args=[USERNAME])
 PROFILE_UNFOLLOW_URL = reverse("profile_unfollow", args=[USERNAME])
+
+NOT_URL = "not" + PAGE_NOT_FOUND_URL
 
 FIRST_IMG = (b"\x47\x49\x46\x38\x39\x61\x02\x00"
              b"\x01\x00\x80\x00\x00\x00\x00\x00"
@@ -55,7 +58,7 @@ class BaseTestCase(TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
-        settings.MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
+        settings.MEDIA_ROOT = os.path.join(settings.MEDIA_ROOT, "media")
         cls.user = User.objects.create(username=USERNAME)
         cls.follower = User.objects.create(username=FOLLOWER)
         cls.guest = Client()
@@ -94,6 +97,7 @@ class BaseTestCase(TestCase):
                                       args=[cls.user.username, cls.post.id])
         cls.POST_EDIT_URL = reverse("post_edit",
                                     args=[cls.user.username, cls.post.id])
+        cls.POST_URL = reverse("post", args=[cls.user.username, cls.post.id])
 
     @classmethod
     def tearDownClass(cls):
