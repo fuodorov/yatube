@@ -1,14 +1,11 @@
-from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from django.shortcuts import reverse
-from django.test import Client, TestCase
 
 from posts.settings import POSTS_PER_PAGE
 from posts.tests.base import (BaseTestCase, INDEX_URL, POST_TEXT,
                               FIRST_GROUP_URL, PROFILE_URL, FOLLOW_INDEX_URL,
                               PROFILE_FOLLOW_URL, PROFILE_UNFOLLOW_URL)
 
-from posts.models import Comment, Follow, Group, Post, User
+from posts.models import Follow, Post
 
 
 class ViewContentTest(BaseTestCase):
