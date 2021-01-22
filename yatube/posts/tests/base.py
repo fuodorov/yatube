@@ -2,12 +2,12 @@ import shutil
 import tempfile
 
 from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
 from posts.forms import PostForm
-from posts.models import Group, Post, User
-from posts.settings import POSTS_PER_PAGE
+from posts.models import Group, User
 
 FIRST_GROUP_NAME = "test-group-1"
 FIRST_GROUP_SLUG = "test-slug-1"
@@ -17,6 +17,10 @@ SECOND_GROUP_SLUG = "test-slug-2"
 SECOND_GROUP_DESCRIPTION = "test-description-2"
 USERNAME = "test-user"
 FOLLOWER = "test-follower"
+POST_TEXT = "test-post"
+COMMENT_TEXT = "test-comment"
+FIRST_IMG_NAME = "img-1"
+SECOND_IMG_NAME = "img-2"
 
 INDEX_URL = reverse("index")
 NEW_POST_URL = reverse("new_post")
@@ -32,6 +36,19 @@ PROFILE_URL = reverse("profile", args=[USERNAME])
 FOLLOWER_URL = reverse("profile", args=[FOLLOWER])
 PROFILE_FOLLOW_URL = reverse("profile_follow", args=[USERNAME])
 PROFILE_UNFOLLOW_URL = reverse("profile_unfollow", args=[USERNAME])
+
+FIRST_IMG = (b"\x47\x49\x46\x38\x39\x61\x02\x00"
+             b"\x01\x00\x80\x00\x00\x00\x00\x00"
+             b"\xFF\xFF\xFF\x21\xF9\x04\x00\x00"
+             b"\x00\x00\x00\x2C\x00\x00\x00\x00"
+             b"\x02\x00\x01\x00\x00\x02\x02\x0C"
+             b"\x0A\x00\x3B")
+SECOND_IMG = (b"\x48\x49\x46\x38\x39\x61\x02\x00"
+              b"\x01\x00\x80\x00\x00\x00\x00\x00"
+              b"\xFF\xFF\xFF\x21\xF9\x04\x00\x00"
+              b"\x00\x00\x00\x2C\x00\x00\x00\x00"
+              b"\x02\x00\x01\x00\x00\x02\x02\x0C"
+              b"\x0A\x00\x3B")
 
 
 class BaseTestCase(TestCase):
@@ -57,17 +74,16 @@ class BaseTestCase(TestCase):
             description=SECOND_GROUP_DESCRIPTION
         )
         cls.form = PostForm()
-        cls.posts = [
-            Post.objects.create(
-                text=f"{case}",
-                author=cls.user,
-                group=cls.first_group
-            ) for case in range(0, POSTS_PER_PAGE*2)
-        ]
-        cls.POST_URL = reverse("post", args=[cls.user.username,
-                                             cls.posts[0].id])
-        cls.POST_EDIT_URL = reverse("post_edit", args=[cls.user.username,
-                                                       cls.posts[0].id])
+        cls.uploaded_first_img = SimpleUploadedFile(
+            name=FIRST_IMG_NAME,
+            content=FIRST_IMG,
+            content_type="image/jpeg"
+        )
+        cls.uploaded_second_img = SimpleUploadedFile(
+            name=SECOND_IMG_NAME,
+            content=SECOND_IMG,
+            content_type="image/jpeg"
+        )
 
     @classmethod
     def tearDownClass(cls):
