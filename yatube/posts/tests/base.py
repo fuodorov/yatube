@@ -1,5 +1,6 @@
 import os
 import shutil
+from collections import namedtuple
 
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -98,6 +99,44 @@ class BaseTestCase(TestCase):
         cls.POST_EDIT_URL = reverse("post_edit",
                                     args=[cls.user.username, cls.post.id])
         cls.POST_URL = reverse("post", args=[cls.user.username, cls.post.id])
+
+        set = {"url", "client", "end_url", "template", "expected_code"}
+        Page = namedtuple("Page", set)
+        cls.list_pages = [
+            Page(INDEX_URL, cls.authorized_user, INDEX_URL,
+                 "index.html", 200),
+            Page(INDEX_URL, cls.guest, INDEX_URL, "index.html", 200),
+            Page(PROFILE_URL, cls.authorized_user, PROFILE_URL,
+                 "posts/profile.html", 200),
+            Page(PROFILE_URL, cls.guest, PROFILE_URL,
+                 "posts/profile.html", 200),
+            Page(FIRST_GROUP_URL, cls.authorized_user, FIRST_GROUP_URL,
+                 "posts/group.html", 200),
+            Page(FIRST_GROUP_URL, cls.guest, FIRST_GROUP_URL,
+                 "posts/group.html", 200),
+            Page(AUTHOR_URL, cls.authorized_user, AUTHOR_URL,
+                 "about/author.html", 200),
+            Page(AUTHOR_URL, cls.guest, AUTHOR_URL,
+                 "about/author.html", 200),
+            Page(TECH_URL, cls.authorized_user, TECH_URL,
+                 "about/tech.html", 200),
+            Page(TECH_URL, cls.guest, TECH_URL,
+                 "about/tech.html", 200),
+            Page(cls.POST_URL, cls.authorized_user, cls.POST_URL,
+                 "posts/post.html", 200),
+            Page(cls.POST_URL, cls.guest, cls.POST_URL,
+                 "posts/post.html", 200),
+            Page(cls.POST_EDIT_URL, cls.authorized_user, cls.POST_URL,
+                 "posts/new_post.html", 200),
+            Page(cls.POST_EDIT_URL, cls.guest, SIGNUP_URL,
+                 "registration/login.html", 302),
+            Page(NEW_POST_URL, cls.authorized_user, NEW_POST_URL,
+                 "posts/new_post.html", 200),
+            Page(NEW_POST_URL, cls.guest, SIGNUP_URL,
+                 "registration/login.html", 302),
+            Page(NOT_URL, cls.guest, PAGE_NOT_FOUND_URL,
+                 "misc/404.html", 404),
+        ]
 
     @classmethod
     def tearDownClass(cls):
