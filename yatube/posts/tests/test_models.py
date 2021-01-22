@@ -1,7 +1,6 @@
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from ..models import Group, Post
+from posts.models import Group, Post, User
 
 
 class TestModelGroup(TestCase):
@@ -25,10 +24,7 @@ class TestModelGroup(TestCase):
         for value, expect in field_verbose.items():
             with self.subTest(value=value):
                 self.assertEqual(
-                    group_field._meta.get_field(value).verbose_name,
-                    expect,
-                    "Неправильное поле verbose_name"
-                )
+                    group_field._meta.get_field(value).verbose_name, expect)
 
     def test_help_text(self):
         group_field = self.group
@@ -40,22 +36,19 @@ class TestModelGroup(TestCase):
         for value, expected in field_help_text.items():
             with self.subTest(value=value):
                 self.assertEqual(
-                    group_field._meta.get_field(value).help_text,
-                    expected,
-                    "Неправильное поле help_text"
-                )
+                    group_field._meta.get_field(value).help_text, expected)
 
     def test_str(self):
         value = self.group.__str__()
         expected = self.group.title
-        self.assertEqual(value, expected, "Метод __str__() не работает")
+        self.assertEqual(value, expected)
 
 
 class TestModelPost(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        user = get_user_model().objects.create_user(username="Alex")
+        user = User.objects.create_user(username="Alex")
         group = Group.objects.create(
             title="Название группы",
             slug="test_slug",
@@ -78,10 +71,7 @@ class TestModelPost(TestCase):
         for value, expected in field_verbose.items():
             with self.subTest(value=value):
                 self.assertEqual(
-                    post_fields._meta.get_field(value).verbose_name,
-                    expected,
-                    "Неправильное поле verbose_name"
-                )
+                    post_fields._meta.get_field(value).verbose_name, expected)
 
     def test_help_text(self):
         post_fields = self.post
@@ -94,12 +84,9 @@ class TestModelPost(TestCase):
         for value, expected in field_verbose.items():
             with self.subTest(value=value):
                 self.assertEqual(
-                    post_fields._meta.get_field(value).help_text,
-                    expected,
-                    "Неправильное поле help_text"
-                )
+                    post_fields._meta.get_field(value).help_text, expected)
 
     def test_str(self):
         value = TestModelGroup.group.__str__()
         expected = TestModelGroup.group.title
-        self.assertEqual(value, expected, "Метод __str__() не работает")
+        self.assertEqual(value, expected)
