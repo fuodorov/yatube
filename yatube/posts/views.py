@@ -136,7 +136,6 @@ def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
     if request.user != author and not is_user_subscribed(request.user, author):
         Follow.objects.create(user=request.user, author=author)
-        return redirect("follow_index")
     return redirect("profile", username=username)
 
 
@@ -145,5 +144,4 @@ def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
     if request.user != author and is_user_subscribed(request.user, author):
         Follow.objects.filter(user=request.user, author=author).delete()
-        return redirect("follow_index")
     return redirect("profile", username=username)
