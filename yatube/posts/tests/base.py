@@ -48,17 +48,11 @@ FIRST_IMG = (b"\x47\x49\x46\x38\x39\x61\x02\x00"
              b"\x00\x00\x00\x2C\x00\x00\x00\x00"
              b"\x02\x00\x01\x00\x00\x02\x02\x0C"
              b"\x0A\x00\x3B")
-SECOND_IMG = (b"\x48\x49\x46\x38\x39\x61\x02\x00"
-              b"\x01\x00\x80\x00\x00\x00\x00\x00"
-              b"\xFF\xFF\xFF\x21\xF9\x04\x00\x00"
-              b"\x00\x00\x00\x2C\x00\x00\x00\x00"
-              b"\x02\x00\x01\x00\x00\x02\x02\x0C"
-              b"\x0A\x00\x3B")
 
 Page = namedtuple("Page", {
     "url",
     "client",
-    "end_url",
+    "target_url",
     "template",
     "expected_code"
 })
@@ -66,7 +60,7 @@ Page = namedtuple("Page", {
 
 class BaseTestCase(TestCase):
     @classmethod
-    def setUpClass(cls) -> None:
+    def setUpClass(cls):
         super().setUpClass()
         settings.MEDIA_ROOT = os.path.join(settings.MEDIA_ROOT, "media")
         cls.user = User.objects.create(username=USERNAME)
@@ -76,7 +70,7 @@ class BaseTestCase(TestCase):
         cls.authorized_user.force_login(cls.user)
         cls.authorized_follower = Client()
         cls.authorized_follower.force_login(cls.follower)
-        Follow.objects.get_or_create(author=cls.user, user=cls.follower)
+        Follow.objects.create(author=cls.user, user=cls.follower)
         cls.first_group = Group.objects.create(
             title=FIRST_GROUP_NAME,
             slug=FIRST_GROUP_SLUG,
@@ -95,7 +89,7 @@ class BaseTestCase(TestCase):
         )
         cls.uploaded_second_img = SimpleUploadedFile(
             name=SECOND_IMG_NAME,
-            content=SECOND_IMG,
+            content=FIRST_IMG,
             content_type="image/jpeg"
         )
         cls.post = Post.objects.create(

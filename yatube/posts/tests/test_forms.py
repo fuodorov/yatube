@@ -1,4 +1,4 @@
-from posts.models import Comment, Follow, Post
+from posts.models import Comment, Post
 from posts.tests.base import (COMMENT_TEXT, FIRST_IMG_NAME, NEW_POST_URL,
                               POST_TEXT, BaseTestCase)
 
