@@ -57,7 +57,7 @@ def profile(request, username):
         "paginator": paginator,
         "author": author,
         "following": following
-        })
+    })
 
 
 def post_view(request, username, post_id):

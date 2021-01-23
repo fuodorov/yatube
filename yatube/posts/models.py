@@ -112,5 +112,5 @@ class Follow(models.Model):
             models.UniqueConstraint(
                 fields=("user", "author"),
                 name="follow_pair"
-                )
+            )
         ]
