@@ -9,7 +9,6 @@
 {% include "posts/include/post_item.html" with post=post %}
 {% endfor %}
 {% endcache %}
-
 {% if page.has_other_pages %}
 {% include "include/paginator.html" with items=page paginator=paginator %}
 {% endif %}
