@@ -6,7 +6,8 @@
       </div>
       <div class="h3 text-muted">
         <a href="{% url 'profile' username=author.username %}">
-          @{{ author }}
+          @{{ author.username }}
+        </a>
       </div>
     </div>
     <ul class="list-group list-group-flush">
