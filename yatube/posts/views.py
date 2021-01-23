@@ -2,9 +2,9 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
-from posts.settings import POSTS_PER_PAGE
 from posts.forms import CommentForm, PostForm
 from posts.models import Follow, Group, Post, User
+from posts.settings import POSTS_PER_PAGE
 
 
 def is_user_subscribed(user, author):
