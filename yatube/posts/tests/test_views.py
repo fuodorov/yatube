@@ -64,28 +64,33 @@ class PostFormTests(TestCase):
         super().tearDownClass()
 
     def test_post_content_on_all_pages(self):
-        for url, client, end_url, template, expected_code in self.list_pages:
-            condition = (
-                url in self.post_check_urls and
-                url != const.INDEX_URL and
-                200 == expected_code
-            )
-            if condition:
-                with self.subTest(url=url):
-                    self.assertTrue(
-                        self.post == client.get(url).context["post"]
-                    )
-            elif url == const.INDEX_URL:
-                with self.subTest(url=url):
-                    self.assertTrue(
-                        self.post == client.get(url).context["page"][0]
-                    )
+        guest = self.guest
+        user, follower = self.authorized_user, self.authorized_follower
+        CHECK_CONTENT = {
+            "index_guest": (const.INDEX_URL, guest),
+            "index_user": (const.INDEX_URL, user),
+            "post_guest": (self.POST_URL, guest),
+            "post_user": (self.POST_URL, user),
+            "follow_index_follower": (const.FOLLOW_INDEX_URL, follower),
+            "group_guest": (const.FIRST_GROUP_URL, guest),
+            "group_user": (const.FIRST_GROUP_URL, user),
+            "profile_guest": (const.PROFILE_URL, guest),
+            "profile_user": (const.PROFILE_URL, user),
+        }
+        for name, (url, client) in CHECK_CONTENT.items():
+            with self.subTest(url=url, msg=name):
+                context = client.get(url).context
+                if context.get("post"):
+                    post = context.get("post")
+                else:
+                    post = context["page"][0]
+                self.assertTrue(self.post == post)
 
     def test_cache_index_page(self):
         response_before = self.authorized_user.get(const.INDEX_URL)
         page_before_clear_cache = response_before.content
-        post = Post.objects.latest("id")
-        post.text = "Update" + post.text
+        post = Post.objects.get(id=self.post.id)
+        post.text = const.POST_NEW_TEXT
         post.save()
         response_before = self.authorized_user.get(const.INDEX_URL)
         page_before_clear_cache_refresh = response_before.content
@@ -95,45 +100,3 @@ class PostFormTests(TestCase):
         response_after = self.authorized_user.get(const.INDEX_URL)
         page_after_clear_cache = response_after.content
         self.assertNotEqual(page_before_clear_cache, page_after_clear_cache)
-
-
-class PaginatorViewsTest(BaseTestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        for post_item in range(2 * POSTS_PER_PAGE):
-            Post.objects.create(
-                text=POST_TEXT,
-                author=cls.user,
-                group=cls.first_group
-            )
-
-    def test_paginator_first_page(self):
-        response = self.guest.get(INDEX_URL)
-        self.assertEqual(
-            len(response.context["page"]),
-            POSTS_PER_PAGE
-        )
-
-    def test_paginator_second_page(self):
-        response = self.guest.get(INDEX_URL + "?page=2")
-        self.assertEqual(
-            len(response.context["page"]),
-            POSTS_PER_PAGE
-        )
-
-
-class FollowTests(BaseTestCase):
-    def test_follow(self):
-        Follow.objects.filter(
-            author=self.user, user=self.follower).delete()
-        self.authorized_follower.get(PROFILE_FOLLOW_URL)
-        self.assertTrue(
-            Follow.objects.filter(author=self.user,
-                                  user=self.follower).exists())
-
-    def test_unfollow(self):
-        self.authorized_follower.get(PROFILE_UNFOLLOW_URL)
-        self.assertFalse(
-            Follow.objects.filter(author=self.user,
-                                  user=self.follower).exists())
