@@ -7,7 +7,6 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 import posts.tests.constants as const
-
 from posts.forms import PostForm
 from posts.models import Comment, Follow, Group, Post, User
 
@@ -36,12 +35,12 @@ class PostFormTests(TestCase):
             description=const.SECOND_GROUP_DESCRIPTION
         )
         cls.form = PostForm()
-        cls.uploaded_first_img = SimpleUploadedFile(
+        cls.UPLOADED_FIRST_IMG = SimpleUploadedFile(
             name=const.FIRST_IMG_NAME,
             content=const.FIRST_IMG,
             content_type="image/jpeg"
         )
-        cls.uploaded_second_img = SimpleUploadedFile(
+        cls.UPLOADED_SECOND_IMG = SimpleUploadedFile(
             name=const.SECOND_IMG_NAME,
             content=const.FIRST_IMG,
             content_type="image/jpeg"
@@ -50,7 +49,7 @@ class PostFormTests(TestCase):
             text=const.POST_TEXT,
             author=cls.user,
             group=cls.first_group,
-            image=cls.uploaded_first_img
+            image=cls.UPLOADED_FIRST_IMG
         )
         cls.ADD_COMMENT_URL = reverse("add_comment",
                                       args=[cls.user.username, cls.post.id])
@@ -64,66 +63,81 @@ class PostFormTests(TestCase):
         super().tearDownClass()
 
     def test_authorized_user_new_post(self):
+        cash_count = Post.objects.count()
         form_data = {
-            "group": self.first_group.id,
-            "text": const.POST_TEXT,
-            "image": self.uploaded_first_img
+            "group": self.second_group.id,
+            "text": const.POST_NEW_TEXT,
+            "image": self.UPLOADED_FIRST_IMG
         }
-        self.authorized_user.post(
+        response = self.authorized_user.post(
             const.NEW_POST_URL,
             data=form_data,
             follow=True
         )
         self.assertTrue(
-            Post.objects.filter(text=const.POST_TEXT).exists() and
-            Post.objects.filter(group=self.first_group.id).exists() and
-            const.FIRST_IMG_NAME in self.post.image.name
+            Post.objects.filter(author=self.user,
+                                text=const.POST_NEW_TEXT,
+                                group=self.second_group.id).exists()
         )
+        self.assertTrue(const.FIRST_IMG_NAME in self.post.image.name)
+        self.assertRedirects(response, const.INDEX_URL)
+        self.assertEqual(Post.objects.count(), cash_count + 1)
+        post = response.context["post"]
+        self.assertEqual(post.text, const.POST_NEW_TEXT)
+        self.assertEqual(post.group.id, self.second_group.id)
+        self.assertEqual(post.author, self.user)
 
     def test_guest_new_post(self):
         cash_count = Post.objects.count()
         form_data = {
             "group": self.first_group.id,
             "text": const.POST_TEXT,
-            "image": self.uploaded_first_img
+            "image": self.UPLOADED_FIRST_IMG
         }
-        response = self.guest.post(
-            const.NEW_POST_URL,
-            data=form_data,
-            follow=True
-        )
+        self.guest.post(const.NEW_POST_URL, data=form_data, follow=True)
         self.assertEqual(Post.objects.count(), cash_count)
-        self.assertEqual(response.status_code, 200)
 
     def test_user_new_comment(self):
-        self.authorized_user.post(
+        response = self.authorized_user.post(
             self.ADD_COMMENT_URL,
             {"text": const.COMMENT_TEXT},
             follow=True
         )
         self.assertTrue(
-            Comment.objects.filter(text=const.COMMENT_TEXT).exists()
+            Comment.objects.filter(author=self.user,
+                                   text=const.COMMENT_TEXT,
+                                   post=self.post).exists()
         )
+        comments = response.context["comments"]
+        self.assertEqual(comments[0].text, const.COMMENT_TEXT)
 
     def test_author_edit_post(self):
-        cashed_post = self.post
-        form_data = {
-            "text": const.POST_NEW_TEXT,
-            "group": self.second_group.id
-        }
-        self.authorized_user.post(self.POST_EDIT_URL, data=form_data, follow=True)
-        self.post.refresh_from_db()
-        self.assertNotEqual(self.post, cashed_post)
-
-    def test_anonym_edit_post(self):
-        cashed_post = self.post
-        CHECK_ANONYM = (self.authorized_follower, self.guest)
         form_data = {
             "text": const.POST_NEW_TEXT,
             "group": self.second_group.id,
-            "image": self.uploaded_second_img
+            "image": self.UPLOADED_SECOND_IMG
         }
-        for anonym in CHECK_ANONYM:
-            with self.subTest(msg=anonym):
-                anonym.post(self.POST_EDIT_URL, data=form_data, follow=True)
-                self.assertEqual(self.post, cashed_post)
+        response = self.authorized_user.post(self.POST_EDIT_URL,
+                                             data=form_data, follow=True)
+        post = response.context["post"]
+        self.assertEqual(post.text, const.POST_NEW_TEXT)
+        self.assertEqual(post.group, self.second_group)
+
+    def test_anonym_edit_post(self):
+        CHECK_ANONYM = {
+            "authorized_no_author": self.authorized_follower,
+            "guest": self.guest
+        }
+        form_data = {
+            "text": const.POST_NEW_TEXT,
+            "group": self.second_group.id,
+            "image": self.UPLOADED_SECOND_IMG
+        }
+        cashed_post = Post.objects.get(id=self.post.id)
+        for name, anonym in CHECK_ANONYM.items():
+            with self.subTest(msg=name):
+                response = anonym.post(self.POST_EDIT_URL,
+                                       data=form_data, follow=True)
+                post = response.context.get("post")
+                if post:
+                    self.assertEqual(post, cashed_post)
