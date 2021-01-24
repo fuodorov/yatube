@@ -7,12 +7,11 @@ class TestModelGroup(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        Group.objects.create(
+        cls.group = Group.objects.create(
             title="Название группы",
             slug="test_slug",
             description="Текст"
         )
-        cls.group = Group.objects.first()
 
     def test_verbose_name(self):
         group_field = self.group
