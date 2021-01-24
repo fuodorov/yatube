@@ -1,12 +1,12 @@
 import os
 import shutil
-import posts.tests.constants as const
 
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
+import posts.tests.constants as const
 from posts.models import Follow, Group, Post, User
 
 
