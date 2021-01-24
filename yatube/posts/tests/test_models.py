@@ -1,5 +1,6 @@
 from django.test import TestCase
 
+import posts.tests.constants as const
 from posts.models import Group, Post, User
 
 
@@ -8,34 +9,32 @@ class TestModelGroup(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.group = Group.objects.create(
-            title="Название группы",
-            slug="test_slug",
-            description="Текст"
+            title=const.FIRST_GROUP_NAME,
+            slug=const.FIRST_GROUP_SLUG,
+            description=const.FIRST_GROUP_DESCRIPTION
         )
 
     def test_verbose_name(self):
-        group_field = self.group
         field_verbose = {
-            "title": "Название группы: ",
-            "slug": "Ключ для составления адреса: ",
-            "description": "Информация об авторе: "
+            "title": Group._meta.get_field("title").verbose_name,
+            "slug": Group._meta.get_field("slug").verbose_name,
+            "description": Group._meta.get_field("description").verbose_name
         }
         for value, expect in field_verbose.items():
             with self.subTest(value=value):
                 self.assertEqual(
-                    group_field._meta.get_field(value).verbose_name, expect)
+                    self.group._meta.get_field(value).verbose_name, expect)
 
     def test_help_text(self):
-        group_field = self.group
         field_help_text = {
-            "title": "Напишите название группы.",
-            "slug": "Укажите адрес сообщества в интернете.",
-            "description": "Напишите что-нибудь об авторе."
+            "title": Group._meta.get_field("title").help_text,
+            "slug": Group._meta.get_field("slug").help_text,
+            "description": Group._meta.get_field("description").help_text
         }
         for value, expected in field_help_text.items():
             with self.subTest(value=value):
                 self.assertEqual(
-                    group_field._meta.get_field(value).help_text, expected)
+                    self.group._meta.get_field(value).help_text, expected)
 
     def test_str(self):
         value = self.group.__str__()
@@ -47,43 +46,39 @@ class TestModelPost(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        user = User.objects.create_user(username="Alex")
+        user = User.objects.create_user(username=const.USERNAME)
         group = Group.objects.create(
-            title="Название группы",
-            slug="test_slug",
-            description="Текст"
+            title=const.FIRST_GROUP_NAME,
+            slug=const.FIRST_GROUP_SLUG,
+            description=const.FIRST_GROUP_DESCRIPTION
         )
-        Post.objects.create(
-            text="Текст",
+        cls.post = Post.objects.create(
+            text=const.POST_TEXT,
             author=user,
             group=group
         )
-        cls.post = Post.objects.get(id=1)
 
     def test_verbose_name(self):
-        post_fields = self.post
         field_verbose = {
-            "text": "Текст заметки: ",
-            "author": "Автор заметки: ",
-            "group": "Группа: "
+            "text": Post._meta.get_field("text").verbose_name,
+            "author": Post._meta.get_field("author").verbose_name,
+            "group": Post._meta.get_field("group").verbose_name
         }
         for value, expected in field_verbose.items():
             with self.subTest(value=value):
                 self.assertEqual(
-                    post_fields._meta.get_field(value).verbose_name, expected)
+                    self.post._meta.get_field(value).verbose_name, expected)
 
     def test_help_text(self):
-        post_fields = self.post
         field_verbose = {
-            "text": "Напишите здесь текст заметки.",
-            "author": "Это пользователь, опубликовавший заметку.",
-            "group": ("Можете выбрать группу, "
-                      "к которой будет принадлежать пост.")
+            "text": Post._meta.get_field("text").help_text,
+            "author": Post._meta.get_field("author").help_text,
+            "group": Post._meta.get_field("group").help_text
         }
         for value, expected in field_verbose.items():
             with self.subTest(value=value):
                 self.assertEqual(
-                    post_fields._meta.get_field(value).help_text, expected)
+                    self.post._meta.get_field(value).help_text, expected)
 
     def test_str(self):
         value = TestModelGroup.group.__str__()
