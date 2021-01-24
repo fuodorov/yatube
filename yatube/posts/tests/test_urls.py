@@ -34,7 +34,7 @@ class StaticURLTests(TestCase):
             slug=const.SECOND_GROUP_SLUG,
             description=const.SECOND_GROUP_DESCRIPTION
         )
-        cls.uploaded_img = SimpleUploadedFile(
+        cls.UPLOADED_IMG = SimpleUploadedFile(
             name=const.FIRST_IMG_NAME,
             content=const.FIRST_IMG,
             content_type="image/jpeg"
@@ -43,7 +43,7 @@ class StaticURLTests(TestCase):
             text=const.POST_TEXT,
             author=cls.user,
             group=cls.group,
-            image=cls.uploaded_img
+            image=cls.UPLOADED_IMG
         )
         cls.ADD_COMMENT_URL = reverse("add_comment",
                                       args=[cls.user.username, cls.post.id])
