@@ -7,6 +7,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 import posts.tests.constants as const
+
 from posts.models import Follow, Group, Post, User
 
 
