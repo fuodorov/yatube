@@ -7,7 +7,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 import posts.tests.constants as consts
-from posts.models import Comment, Follow, Group, Post, User
+from posts.models import Follow, Group, Post, User
 
 
 class PostFormTests(TestCase):
@@ -89,7 +89,6 @@ class PostFormTests(TestCase):
         self.assertEqual(Post.objects.count(), cash_count)
 
     def test_user_new_comment(self):
-        self.assertEqual(Comment.objects.count(), 0)
         response = self.authorized_user.post(
             self.ADD_COMMENT_URL,
             {"text": consts.COMMENT_TEXT},
