@@ -8,9 +8,14 @@ from posts.settings import POSTS_PER_PAGE
 
 
 def is_user_subscribed(user, author):
-    if user.is_authenticated:
-        return Follow.objects.filter(user=user, author=author).exists()
-    return False
+    return (user != author and
+            user.is_authenticated and
+            Follow.objects.filter(user=user, author=author).exists())
+
+
+def is_authenticated_user_subscribed(user, author):
+    return (user != author and
+            Follow.objects.filter(user=user, author=author).exists())
 
 
 def index(request):
@@ -54,8 +59,7 @@ def profile(request, username):
     paginator = Paginator(posts, POSTS_PER_PAGE)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
-    following = (request.user != author and
-                 is_user_subscribed(request.user, author))
+    following = is_user_subscribed(request.user, author)
     return render(request, "posts/profile.html", {
         "page": page,
         "paginator": paginator,
@@ -67,8 +71,7 @@ def profile(request, username):
 def post_view(request, username, post_id):
     post = get_object_or_404(Post, author__username=username, pk=post_id)
     comments = post.comments.all()
-    following = (request.user != post.author and
-                 is_user_subscribed(request.user, post.author))
+    following = is_user_subscribed(request.user, post.author)
     return render(request, "posts/post.html", {
         "author": post.author,
         "post": post,
@@ -134,14 +137,13 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    if request.user != author and not is_user_subscribed(request.user, author):
+    if not is_authenticated_user_subscribed(request.user, author):
         Follow.objects.create(user=request.user, author=author)
     return redirect("profile", username=username)
 
 
 @login_required
 def profile_unfollow(request, username):
-    author = get_object_or_404(User, username=username)
-    if request.user != author and is_user_subscribed(request.user, author):
-        Follow.objects.filter(user=request.user, author=author).delete()
+    get_object_or_404(Follow, user=request.user,
+                      author__username=username).delete()
     return redirect("profile", username=username)
