@@ -83,8 +83,6 @@ class StaticURLTests(TestCase):
                                 consts.PROFILE_FOLLOW_USER_TARGET_URL),
             "unfollow_guest": (consts.PROFILE_UNFOLLOW_URL, guest,
                                consts.PROFILE_UNFOLLOW_GUEST_TARGET_URL),
-            "unfollow_user": (consts.PROFILE_UNFOLLOW_URL, user,
-                              consts.PROFILE_UNFOLLOW_USER_TARGET_URL),
             "unfollow_follower": (consts.PROFILE_UNFOLLOW_URL, follower,
                                   consts.PROFILE_UNFOLLOW_FOLLOWER_TARGET_URL)
         }
@@ -131,7 +129,7 @@ class StaticURLTests(TestCase):
             "follow_user": (consts.PROFILE_FOLLOW_URL, user, 302),
             "follow_follower": (consts.PROFILE_FOLLOW_URL, follower, 302),
             "unfollow_guest": (consts.PROFILE_UNFOLLOW_URL, guest, 302),
-            "unfollow_user": (consts.PROFILE_UNFOLLOW_URL, user, 302),
+            "unfollow_user": (consts.PROFILE_UNFOLLOW_URL, user, 404),
             "unfollow_follower": (consts.PROFILE_UNFOLLOW_URL, follower, 302),
             "page_404_guest": (consts.NOT_URL, guest, 404),
             "about_author_guest": (consts.AUTHOR_URL, guest, 200),
