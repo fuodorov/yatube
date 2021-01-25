@@ -76,8 +76,8 @@ class PostFormTests(TestCase):
                 self.assertTrue(self.post == post)
 
     def test_post_on_another_group(self):
-        response = self.authorized_user.get(consts.SECOND_GROUP_URL)
-        self.assertIsNone(response.context.get("post"))
+        context = self.authorized_user.get(consts.SECOND_GROUP_URL).context
+        self.assertNotIn(self.post, context["page"])
 
     def test_cache_index_page(self):
         response_before = self.authorized_user.get(consts.INDEX_URL)
