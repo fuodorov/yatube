@@ -41,19 +41,12 @@ class PostFormTests(TestCase):
             content=consts.FIRST_IMG,
             content_type="image/jpeg"
         )
-        cls.UPLOADED_SECOND_IMG = SimpleUploadedFile(
-            name=consts.SECOND_IMG_NAME,
-            content=consts.FIRST_IMG,
-            content_type="image/jpeg"
-        )
         cls.post = Post.objects.create(
             text=consts.POST_TEXT,
             author=cls.user,
             group=cls.first_group,
             image=cls.UPLOADED_FIRST_IMG
         )
-        cls.ADD_COMMENT_URL = reverse("add_comment",
-                                      args=[cls.user.username, cls.post.id])
         cls.POST_EDIT_URL = reverse("post_edit",
                                     args=[cls.user.username, cls.post.id])
         cls.POST_URL = reverse("post", args=[cls.user.username, cls.post.id])
@@ -64,39 +57,43 @@ class PostFormTests(TestCase):
         super().tearDownClass()
 
     def test_post_content_on_all_pages(self):
-        guest = self.guest
-        user, follower = self.authorized_user, self.authorized_follower
+        guest, follower = self.guest, self.authorized_follower
         CHECK_CONTENT = {
             "index_guest": (consts.INDEX_URL, guest),
-            "index_user": (consts.INDEX_URL, user),
             "post_guest": (self.POST_URL, guest),
-            "post_user": (self.POST_URL, user),
             "follow_index_follower": (consts.FOLLOW_INDEX_URL, follower),
             "group_guest": (consts.FIRST_GROUP_URL, guest),
-            "group_user": (consts.FIRST_GROUP_URL, user),
             "profile_guest": (consts.PROFILE_URL, guest),
-            "profile_user": (consts.PROFILE_URL, user),
         }
         for name, (url, client) in CHECK_CONTENT.items():
             with self.subTest(url=url, msg=name):
                 context = client.get(url).context
                 if context.get("post"):
-                    post = context.get("post")
+                    post = context["post"]
                 else:
+                    self.assertTrue(
+                        Post.objects.filter(author=self.user,
+                                            text=consts.POST_TEXT,
+                                            group=self.first_group).exists()
+                    )
                     post = context["page"][0]
                 self.assertTrue(self.post == post)
 
+    def test_post_on_another_group(self):
+        response = self.authorized_user.get(consts.SECOND_GROUP_URL)
+        self.assertTrue(
+            Post.objects.filter(author=self.user,
+                                text=consts.POST_TEXT,
+                                group=self.first_group).exists()
+        )
+        self.assertIsNone(response.context.get("post"))
+
     def test_cache_index_page(self):
         response_before = self.authorized_user.get(consts.INDEX_URL)
-        page_before_clear_cache = response_before.content
-        post = Post.objects.get(id=self.post.id)
-        post.text = consts.POST_NEW_TEXT
-        post.save()
+        self.post.text = consts.POST_NEW_TEXT
+        self.post.save()
         response_before = self.authorized_user.get(consts.INDEX_URL)
-        page_before_clear_cache_refresh = response_before.content
-        self.assertEqual(page_before_clear_cache,
-                         page_before_clear_cache_refresh)
+        self.assertEqual(response_before.content, response_before.content)
         cache.clear()
         response_after = self.authorized_user.get(consts.INDEX_URL)
-        page_after_clear_cache = response_after.content
-        self.assertNotEqual(page_before_clear_cache, page_after_clear_cache)
+        self.assertNotEqual(response_before.content, response_after.content)
