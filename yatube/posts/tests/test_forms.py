@@ -63,26 +63,19 @@ class PostFormTests(TestCase):
         super().tearDownClass()
 
     def test_authorized_user_new_post(self):
-        cash_count = Post.objects.count()
+        self.assertEqual(Post.objects.count(), 1)
         form_data = {
             "group": self.second_group.id,
             "text": consts.POST_NEW_TEXT,
-            "image": self.UPLOADED_FIRST_IMG
+            "image": self.UPLOADED_SECOND_IMG
         }
-        response = self.authorized_user.post(
+        self.authorized_user.post(
             consts.NEW_POST_URL,
             data=form_data,
             follow=True
         )
-        self.assertTrue(
-            Post.objects.filter(author=self.user,
-                                text=consts.POST_NEW_TEXT,
-                                group=self.second_group.id).exists()
-        )
-        self.assertTrue(consts.FIRST_IMG_NAME in self.post.image.name)
-        self.assertRedirects(response, consts.INDEX_URL)
-        self.assertEqual(Post.objects.count(), cash_count + 1)
-        post = response.context["post"]
+        self.assertEqual(Post.objects.count(), 2)
+        post = Post.objects.exclude(id=self.post.id)[0]
         self.assertEqual(post.text, consts.POST_NEW_TEXT)
         self.assertEqual(post.group.id, self.second_group.id)
         self.assertEqual(post.author, self.user)
@@ -98,18 +91,17 @@ class PostFormTests(TestCase):
         self.assertEqual(Post.objects.count(), cash_count)
 
     def test_user_new_comment(self):
+        self.assertEqual(Comment.objects.count(), 0)
         response = self.authorized_user.post(
             self.ADD_COMMENT_URL,
             {"text": consts.COMMENT_TEXT},
             follow=True
         )
-        self.assertTrue(
-            Comment.objects.filter(author=self.user,
-                                   text=consts.COMMENT_TEXT,
-                                   post=self.post).exists()
-        )
-        comments = response.context["comments"]
-        self.assertEqual(comments[0].text, consts.COMMENT_TEXT)
+        self.assertEqual(len(response.context["comments"]), 1)
+        comment = response.context["comments"][0]
+        self.assertEqual(comment.text, consts.COMMENT_TEXT)
+        self.assertEqual(comment.author, self.user)
+        self.assertEqual(comment.post, self.post)
 
     def test_author_edit_post(self):
         form_data = {
@@ -120,11 +112,11 @@ class PostFormTests(TestCase):
         response = self.authorized_user.post(self.POST_EDIT_URL,
                                              data=form_data, follow=True)
         post = response.context["post"]
-        self.assertEqual(post.text, consts.POST_NEW_TEXT)
-        self.assertEqual(post.group, self.second_group)
+        self.assertEqual(post, self.post)
 
-    def test_anonym_edit_post(self):
-        CHECK_CLIENTS_NO_AUTHOR = {
+    def test_client_not_author_edit_post(self):
+        self.assertEqual(Post.objects.count(), 1)
+        CHECK_CLIENTS_NOT_AUTHOR = {
             "authorized_no_author": self.authorized_follower,
             "guest": self.guest
         }
@@ -133,10 +125,9 @@ class PostFormTests(TestCase):
             "group": self.second_group.id,
             "image": self.UPLOADED_SECOND_IMG
         }
-        for name, client in CHECK_CLIENTS_NO_AUTHOR.items():
+        for name, client in CHECK_CLIENTS_NOT_AUTHOR.items():
             with self.subTest(msg=name):
-                response = client.post(self.POST_EDIT_URL,
-                                       data=form_data, follow=True)
-                post = response.context.get("post")
-                if post:
-                    self.assertEqual(post, self.post)
+                client.post(self.POST_EDIT_URL,
+                            data=form_data, follow=True)
+                post = Post.objects.filter(id=self.post.id)[0]
+                self.assertEqual(post, self.post)
