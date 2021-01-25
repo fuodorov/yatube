@@ -34,6 +34,5 @@ class PostFormTests(TestCase):
                                   user=self.follower).exists())
 
     def test_post_on_follower_page(self):
-        response = self.authorized_follower.get(consts.FOLLOW_INDEX_URL)
-        post = response.context["post"]
-        self.assertEqual(post, self.post)
+        context = self.authorized_follower.get(consts.FOLLOW_INDEX_URL).context
+        self.assertEqual(context["post"], self.post)
