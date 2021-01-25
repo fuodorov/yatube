@@ -1,11 +1,10 @@
 import os
 
 from django.conf import settings
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 
 import posts.tests.constants as consts
-from posts.models import Follow, Group, Post, User
+from posts.models import Follow, Post, User
 
 
 class PostFormTests(TestCase):
@@ -21,27 +20,9 @@ class PostFormTests(TestCase):
         cls.authorized_follower = Client()
         cls.authorized_follower.force_login(cls.follower)
         Follow.objects.create(author=cls.user, user=cls.follower)
-        cls.first_group = Group.objects.create(
-            title=consts.FIRST_GROUP_NAME,
-            slug=consts.FIRST_GROUP_SLUG,
-            description=consts.FIRST_GROUP_DESCRIPTION
-        )
-        cls.UPLOADED_FIRST_IMG = SimpleUploadedFile(
-            name=consts.FIRST_IMG_NAME,
-            content=consts.FIRST_IMG,
-            content_type="image/jpeg"
-        )
-        cls.post = Post.objects.create(
-            text=consts.POST_TEXT,
-            author=cls.user,
-            group=cls.first_group,
-            image=cls.UPLOADED_FIRST_IMG
-        )
+        cls.post = Post.objects.create(text=consts.POST_TEXT, author=cls.user)
 
     def test_follow(self):
-        Follow.objects.filter(
-            author=self.user, user=self.follower).delete()
-        self.authorized_follower.get(consts.PROFILE_FOLLOW_URL)
         self.assertTrue(
             Follow.objects.filter(author=self.user,
                                   user=self.follower).exists())
@@ -51,3 +32,7 @@ class PostFormTests(TestCase):
         self.assertFalse(
             Follow.objects.filter(author=self.user,
                                   user=self.follower).exists())
+
+    def test_post_on_follower_page(self):
+        response = self.authorized_follower.get(consts.FOLLOW_INDEX_URL)
+        self.assertEqual(self.post, response.context["post"])
