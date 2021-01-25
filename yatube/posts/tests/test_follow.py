@@ -33,6 +33,6 @@ class PostFormTests(TestCase):
             Follow.objects.filter(author=self.user,
                                   user=self.follower).exists())
 
-    def test_post_on_follower_page(self):
-        context = self.authorized_follower.get(consts.FOLLOW_INDEX_URL).context
-        self.assertEqual(context["post"], self.post)
+    def test_post_is_not_on_follow_index(self):
+        context = self.authorized_user.get(consts.FOLLOW_INDEX_URL).context
+        self.assertIsNone(context.get("post"))
