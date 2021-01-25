@@ -64,7 +64,7 @@ class StaticURLTests(TestCase):
     def test_pages_redirect(self):
         guest = self.guest
         user, follower = self.authorized_user, self.authorized_follower
-        CHECK_EXPECTED_CODE = {
+        CHECK_REDIRECT = {
             "new_guest": (consts.NEW_POST_URL, guest,
                           consts.NEW_GUEST_TARGET_URL),
             "follow_index_guest": (consts.FOLLOW_INDEX_URL, guest,
@@ -88,7 +88,7 @@ class StaticURLTests(TestCase):
             "unfollow_follower": (consts.PROFILE_UNFOLLOW_URL, follower,
                                   consts.PROFILE_UNFOLLOW_FOLLOWER_TARGET_URL)
         }
-        for name, (url, client, target_url) in CHECK_EXPECTED_CODE.items():
+        for name, (url, client, target_url) in CHECK_REDIRECT.items():
             with self.subTest(url=url, msg=name):
                 self.assertRedirects(client.get(url, follow=True), target_url)
 
@@ -115,18 +115,13 @@ class StaticURLTests(TestCase):
         user, follower = self.authorized_user, self.authorized_follower
         CHECK_EXPECTED_CODE = {
             "index_guest": (consts.INDEX_URL, guest, 200),
-            "index_user": (consts.INDEX_URL, user, 200),
             "new_guest": (consts.NEW_POST_URL, guest, 302),
             "new_user": (consts.NEW_POST_URL, user, 200),
             "follow_index_guest": (consts.FOLLOW_INDEX_URL, guest, 302),
             "follow_index_user": (consts.FOLLOW_INDEX_URL, user, 200),
-            "follow_index_follower": (consts.FOLLOW_INDEX_URL, follower, 200),
             "group_guest": (consts.FIRST_GROUP_URL, guest, 200),
-            "group_user": (consts.FIRST_GROUP_URL, user, 200),
             "profile_guest": (consts.PROFILE_URL, guest, 200),
-            "profile_user": (consts.PROFILE_URL, user, 200),
             "post_guest": (self.POST_URL, guest, 200),
-            "post_user": (self.POST_URL, user, 200),
             "post_edit_guest": (self.POST_EDIT_URL, guest, 302),
             "post_edit_user": (self.POST_EDIT_URL, user, 200),
             "post_edit_follower": (self.POST_EDIT_URL, follower, 302),
@@ -139,11 +134,8 @@ class StaticURLTests(TestCase):
             "unfollow_user": (consts.PROFILE_UNFOLLOW_URL, user, 302),
             "unfollow_follower": (consts.PROFILE_UNFOLLOW_URL, follower, 302),
             "page_404_guest": (consts.NOT_URL, guest, 404),
-            "page_404_user": (consts.NOT_URL, user, 404),
             "about_author_guest": (consts.AUTHOR_URL, guest, 200),
-            "about_author_user": (consts.AUTHOR_URL, user, 200),
-            "about_tech_guest": (consts.TECH_URL, guest, 200),
-            "about_tech_user": (consts.TECH_URL, user, 200)
+            "about_tech_guest": (consts.TECH_URL, guest, 200)
         }
         for name, (url, client, expected_code) in CHECK_EXPECTED_CODE.items():
             with self.subTest(url=url, msg=name):
