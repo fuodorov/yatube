@@ -13,8 +13,8 @@ def is_user_subscribed(user, author):
             Follow.objects.filter(user=user, author=author).exists())
 
 
-def is_authenticated_user_subscribed(user, author):
-    return (user != author and
+def is_authenticated_user_not_subscribed(user, author):
+    return (user != author and not
             Follow.objects.filter(user=user, author=author).exists())
 
 
@@ -137,7 +137,7 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    if not is_authenticated_user_subscribed(request.user, author):
+    if is_authenticated_user_not_subscribed(request.user, author):
         Follow.objects.create(user=request.user, author=author)
     return redirect("profile", username=username)
 
