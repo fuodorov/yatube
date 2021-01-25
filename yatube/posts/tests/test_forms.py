@@ -124,7 +124,7 @@ class PostFormTests(TestCase):
         self.assertEqual(post.group, self.second_group)
 
     def test_anonym_edit_post(self):
-        CHECK_ANONYM = {
+        CHECK_CLIENT_NO_AUTHOR = {
             "authorized_no_author": self.authorized_follower,
             "guest": self.guest
         }
@@ -133,11 +133,10 @@ class PostFormTests(TestCase):
             "group": self.second_group.id,
             "image": self.UPLOADED_SECOND_IMG
         }
-        cashed_post = Post.objects.get(id=self.post.id)
-        for name, anonym in CHECK_ANONYM.items():
+        for name, client in CHECK_CLIENT_NO_AUTHOR.items():
             with self.subTest(msg=name):
-                response = anonym.post(self.POST_EDIT_URL,
+                response = client.post(self.POST_EDIT_URL,
                                        data=form_data, follow=True)
                 post = response.context.get("post")
                 if post:
-                    self.assertEqual(post, cashed_post)
+                    self.assertEqual(post, self.post)
