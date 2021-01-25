@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-import posts.tests.constants as const
+import posts.tests.constants as consts
 from posts.models import Group, Post, User
 
 
@@ -9,9 +9,9 @@ class TestModelGroup(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.group = Group.objects.create(
-            title=const.FIRST_GROUP_NAME,
-            slug=const.FIRST_GROUP_SLUG,
-            description=const.FIRST_GROUP_DESCRIPTION
+            title=consts.FIRST_GROUP_NAME,
+            slug=consts.FIRST_GROUP_SLUG,
+            description=consts.FIRST_GROUP_DESCRIPTION
         )
 
     def test_verbose_name(self):
@@ -48,14 +48,14 @@ class TestModelPost(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        user = User.objects.create_user(username=const.USERNAME)
+        user = User.objects.create_user(username=consts.USERNAME)
         group = Group.objects.create(
-            title=const.FIRST_GROUP_NAME,
-            slug=const.FIRST_GROUP_SLUG,
-            description=const.FIRST_GROUP_DESCRIPTION
+            title=consts.FIRST_GROUP_NAME,
+            slug=consts.FIRST_GROUP_SLUG,
+            description=consts.FIRST_GROUP_DESCRIPTION
         )
         cls.post = Post.objects.create(
-            text=const.POST_TEXT,
+            text=consts.POST_TEXT,
             author=user,
             group=group
         )

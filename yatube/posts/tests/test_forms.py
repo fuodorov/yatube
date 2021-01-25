@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
-import posts.tests.constants as const
+import posts.tests.constants as consts
 from posts.forms import PostForm
 from posts.models import Comment, Follow, Group, Post, User
 
@@ -16,8 +16,8 @@ class PostFormTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         settings.MEDIA_ROOT = os.path.join(settings.MEDIA_ROOT, "media")
-        cls.user = User.objects.create(username=const.USERNAME)
-        cls.follower = User.objects.create(username=const.FOLLOWER)
+        cls.user = User.objects.create(username=consts.USERNAME)
+        cls.follower = User.objects.create(username=consts.FOLLOWER)
         cls.guest = Client()
         cls.authorized_user = Client()
         cls.authorized_user.force_login(cls.user)
@@ -25,28 +25,28 @@ class PostFormTests(TestCase):
         cls.authorized_follower.force_login(cls.follower)
         Follow.objects.create(author=cls.user, user=cls.follower)
         cls.first_group = Group.objects.create(
-            title=const.FIRST_GROUP_NAME,
-            slug=const.FIRST_GROUP_SLUG,
-            description=const.FIRST_GROUP_DESCRIPTION
+            title=consts.FIRST_GROUP_NAME,
+            slug=consts.FIRST_GROUP_SLUG,
+            description=consts.FIRST_GROUP_DESCRIPTION
         )
         cls.second_group = Group.objects.create(
-            title=const.SECOND_GROUP_NAME,
-            slug=const.SECOND_GROUP_SLUG,
-            description=const.SECOND_GROUP_DESCRIPTION
+            title=consts.SECOND_GROUP_NAME,
+            slug=consts.SECOND_GROUP_SLUG,
+            description=consts.SECOND_GROUP_DESCRIPTION
         )
         cls.form = PostForm()
         cls.UPLOADED_FIRST_IMG = SimpleUploadedFile(
-            name=const.FIRST_IMG_NAME,
-            content=const.FIRST_IMG,
+            name=consts.FIRST_IMG_NAME,
+            content=consts.FIRST_IMG,
             content_type="image/jpeg"
         )
         cls.UPLOADED_SECOND_IMG = SimpleUploadedFile(
-            name=const.SECOND_IMG_NAME,
-            content=const.FIRST_IMG,
+            name=consts.SECOND_IMG_NAME,
+            content=consts.FIRST_IMG,
             content_type="image/jpeg"
         )
         cls.post = Post.objects.create(
-            text=const.POST_TEXT,
+            text=consts.POST_TEXT,
             author=cls.user,
             group=cls.first_group,
             image=cls.UPLOADED_FIRST_IMG
@@ -66,24 +66,24 @@ class PostFormTests(TestCase):
         cash_count = Post.objects.count()
         form_data = {
             "group": self.second_group.id,
-            "text": const.POST_NEW_TEXT,
+            "text": consts.POST_NEW_TEXT,
             "image": self.UPLOADED_FIRST_IMG
         }
         response = self.authorized_user.post(
-            const.NEW_POST_URL,
+            consts.NEW_POST_URL,
             data=form_data,
             follow=True
         )
         self.assertTrue(
             Post.objects.filter(author=self.user,
-                                text=const.POST_NEW_TEXT,
+                                text=consts.POST_NEW_TEXT,
                                 group=self.second_group.id).exists()
         )
-        self.assertTrue(const.FIRST_IMG_NAME in self.post.image.name)
-        self.assertRedirects(response, const.INDEX_URL)
+        self.assertTrue(consts.FIRST_IMG_NAME in self.post.image.name)
+        self.assertRedirects(response, consts.INDEX_URL)
         self.assertEqual(Post.objects.count(), cash_count + 1)
         post = response.context["post"]
-        self.assertEqual(post.text, const.POST_NEW_TEXT)
+        self.assertEqual(post.text, consts.POST_NEW_TEXT)
         self.assertEqual(post.group.id, self.second_group.id)
         self.assertEqual(post.author, self.user)
 
@@ -91,36 +91,36 @@ class PostFormTests(TestCase):
         cash_count = Post.objects.count()
         form_data = {
             "group": self.first_group.id,
-            "text": const.POST_TEXT,
+            "text": consts.POST_TEXT,
             "image": self.UPLOADED_FIRST_IMG
         }
-        self.guest.post(const.NEW_POST_URL, data=form_data, follow=True)
+        self.guest.post(consts.NEW_POST_URL, data=form_data, follow=True)
         self.assertEqual(Post.objects.count(), cash_count)
 
     def test_user_new_comment(self):
         response = self.authorized_user.post(
             self.ADD_COMMENT_URL,
-            {"text": const.COMMENT_TEXT},
+            {"text": consts.COMMENT_TEXT},
             follow=True
         )
         self.assertTrue(
             Comment.objects.filter(author=self.user,
-                                   text=const.COMMENT_TEXT,
+                                   text=consts.COMMENT_TEXT,
                                    post=self.post).exists()
         )
         comments = response.context["comments"]
-        self.assertEqual(comments[0].text, const.COMMENT_TEXT)
+        self.assertEqual(comments[0].text, consts.COMMENT_TEXT)
 
     def test_author_edit_post(self):
         form_data = {
-            "text": const.POST_NEW_TEXT,
+            "text": consts.POST_NEW_TEXT,
             "group": self.second_group.id,
             "image": self.UPLOADED_SECOND_IMG
         }
         response = self.authorized_user.post(self.POST_EDIT_URL,
                                              data=form_data, follow=True)
         post = response.context["post"]
-        self.assertEqual(post.text, const.POST_NEW_TEXT)
+        self.assertEqual(post.text, consts.POST_NEW_TEXT)
         self.assertEqual(post.group, self.second_group)
 
     def test_anonym_edit_post(self):
@@ -129,7 +129,7 @@ class PostFormTests(TestCase):
             "guest": self.guest
         }
         form_data = {
-            "text": const.POST_NEW_TEXT,
+            "text": consts.POST_NEW_TEXT,
             "group": self.second_group.id,
             "image": self.UPLOADED_SECOND_IMG
         }

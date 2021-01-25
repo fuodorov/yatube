@@ -7,7 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
-import posts.tests.constants as const
+import posts.tests.constants as consts
 from posts.forms import PostForm
 from posts.models import Follow, Group, Post, User
 
@@ -17,8 +17,8 @@ class PostFormTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         settings.MEDIA_ROOT = os.path.join(settings.MEDIA_ROOT, "media")
-        cls.user = User.objects.create(username=const.USERNAME)
-        cls.follower = User.objects.create(username=const.FOLLOWER)
+        cls.user = User.objects.create(username=consts.USERNAME)
+        cls.follower = User.objects.create(username=consts.FOLLOWER)
         cls.guest = Client()
         cls.authorized_user = Client()
         cls.authorized_user.force_login(cls.user)
@@ -26,28 +26,28 @@ class PostFormTests(TestCase):
         cls.authorized_follower.force_login(cls.follower)
         Follow.objects.create(author=cls.user, user=cls.follower)
         cls.first_group = Group.objects.create(
-            title=const.FIRST_GROUP_NAME,
-            slug=const.FIRST_GROUP_SLUG,
-            description=const.FIRST_GROUP_DESCRIPTION
+            title=consts.FIRST_GROUP_NAME,
+            slug=consts.FIRST_GROUP_SLUG,
+            description=consts.FIRST_GROUP_DESCRIPTION
         )
         cls.second_group = Group.objects.create(
-            title=const.SECOND_GROUP_NAME,
-            slug=const.SECOND_GROUP_SLUG,
-            description=const.SECOND_GROUP_DESCRIPTION
+            title=consts.SECOND_GROUP_NAME,
+            slug=consts.SECOND_GROUP_SLUG,
+            description=consts.SECOND_GROUP_DESCRIPTION
         )
         cls.form = PostForm()
         cls.UPLOADED_FIRST_IMG = SimpleUploadedFile(
-            name=const.FIRST_IMG_NAME,
-            content=const.FIRST_IMG,
+            name=consts.FIRST_IMG_NAME,
+            content=consts.FIRST_IMG,
             content_type="image/jpeg"
         )
         cls.UPLOADED_SECOND_IMG = SimpleUploadedFile(
-            name=const.SECOND_IMG_NAME,
-            content=const.FIRST_IMG,
+            name=consts.SECOND_IMG_NAME,
+            content=consts.FIRST_IMG,
             content_type="image/jpeg"
         )
         cls.post = Post.objects.create(
-            text=const.POST_TEXT,
+            text=consts.POST_TEXT,
             author=cls.user,
             group=cls.first_group,
             image=cls.UPLOADED_FIRST_IMG
@@ -67,15 +67,15 @@ class PostFormTests(TestCase):
         guest = self.guest
         user, follower = self.authorized_user, self.authorized_follower
         CHECK_CONTENT = {
-            "index_guest": (const.INDEX_URL, guest),
-            "index_user": (const.INDEX_URL, user),
+            "index_guest": (consts.INDEX_URL, guest),
+            "index_user": (consts.INDEX_URL, user),
             "post_guest": (self.POST_URL, guest),
             "post_user": (self.POST_URL, user),
-            "follow_index_follower": (const.FOLLOW_INDEX_URL, follower),
-            "group_guest": (const.FIRST_GROUP_URL, guest),
-            "group_user": (const.FIRST_GROUP_URL, user),
-            "profile_guest": (const.PROFILE_URL, guest),
-            "profile_user": (const.PROFILE_URL, user),
+            "follow_index_follower": (consts.FOLLOW_INDEX_URL, follower),
+            "group_guest": (consts.FIRST_GROUP_URL, guest),
+            "group_user": (consts.FIRST_GROUP_URL, user),
+            "profile_guest": (consts.PROFILE_URL, guest),
+            "profile_user": (consts.PROFILE_URL, user),
         }
         for name, (url, client) in CHECK_CONTENT.items():
             with self.subTest(url=url, msg=name):
@@ -87,16 +87,16 @@ class PostFormTests(TestCase):
                 self.assertTrue(self.post == post)
 
     def test_cache_index_page(self):
-        response_before = self.authorized_user.get(const.INDEX_URL)
+        response_before = self.authorized_user.get(consts.INDEX_URL)
         page_before_clear_cache = response_before.content
         post = Post.objects.get(id=self.post.id)
-        post.text = const.POST_NEW_TEXT
+        post.text = consts.POST_NEW_TEXT
         post.save()
-        response_before = self.authorized_user.get(const.INDEX_URL)
+        response_before = self.authorized_user.get(consts.INDEX_URL)
         page_before_clear_cache_refresh = response_before.content
         self.assertEqual(page_before_clear_cache,
                          page_before_clear_cache_refresh)
         cache.clear()
-        response_after = self.authorized_user.get(const.INDEX_URL)
+        response_after = self.authorized_user.get(consts.INDEX_URL)
         page_after_clear_cache = response_after.content
         self.assertNotEqual(page_before_clear_cache, page_after_clear_cache)
