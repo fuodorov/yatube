@@ -7,7 +7,6 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 import posts.tests.constants as consts
-from posts.forms import PostForm
 from posts.models import Comment, Follow, Group, Post, User
 
 
@@ -34,7 +33,6 @@ class PostFormTests(TestCase):
             slug=consts.SECOND_GROUP_SLUG,
             description=consts.SECOND_GROUP_DESCRIPTION
         )
-        cls.form = PostForm()
         cls.UPLOADED_FIRST_IMG = SimpleUploadedFile(
             name=consts.FIRST_IMG_NAME,
             content=consts.FIRST_IMG,
