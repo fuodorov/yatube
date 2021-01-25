@@ -113,7 +113,6 @@ class PostFormTests(TestCase):
         self.assertEqual(post, self.post)
 
     def test_client_not_author_edit_post(self):
-        self.assertEqual(Post.objects.count(), 1)
         CHECK_CLIENTS_NOT_AUTHOR = {
             "authorized_no_author": self.authorized_follower,
             "guest": self.guest
@@ -127,5 +126,6 @@ class PostFormTests(TestCase):
             with self.subTest(msg=name):
                 client.post(self.POST_EDIT_URL,
                             data=form_data, follow=True)
+                self.assertEqual(Post.objects.count(), 1)
                 post = Post.objects.filter(id=self.post.id)[0]
                 self.assertEqual(post, self.post)
