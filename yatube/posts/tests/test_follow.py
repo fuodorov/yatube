@@ -35,4 +35,4 @@ class PostFormTests(TestCase):
 
     def test_post_is_not_on_follow_index(self):
         context = self.authorized_user.get(consts.FOLLOW_INDEX_URL).context
-        self.assertIsNone(context.get("post"))
+        self.assertNotIn(self.post, context["page"])
