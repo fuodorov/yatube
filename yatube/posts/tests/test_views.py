@@ -70,7 +70,8 @@ class PostFormTests(TestCase):
                 context = client.get(url).context
                 if context.get("post"):
                     post = context["post"]
-                elif 1 == len(context["page"]):
+                else:
+                    self.assertEqual(len(context["page"]), 1)
                     post = context["page"][0]
                 self.assertTrue(self.post == post)
 
