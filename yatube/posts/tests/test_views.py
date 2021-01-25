@@ -70,22 +70,12 @@ class PostFormTests(TestCase):
                 context = client.get(url).context
                 if context.get("post"):
                     post = context["post"]
-                else:
-                    self.assertTrue(
-                        Post.objects.filter(author=self.user,
-                                            text=consts.POST_TEXT,
-                                            group=self.first_group).exists()
-                    )
+                elif 1 == len(context["page"]):
                     post = context["page"][0]
                 self.assertTrue(self.post == post)
 
     def test_post_on_another_group(self):
         response = self.authorized_user.get(consts.SECOND_GROUP_URL)
-        self.assertTrue(
-            Post.objects.filter(author=self.user,
-                                text=consts.POST_TEXT,
-                                group=self.first_group).exists()
-        )
         self.assertIsNone(response.context.get("post"))
 
     def test_cache_index_page(self):
