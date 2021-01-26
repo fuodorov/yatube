@@ -7,7 +7,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 import posts.tests.constants as consts
-from posts.models import Follow, Group, Post, User
+from posts.models import Group, Post, User
 
 
 class PostFormTests(TestCase):
@@ -22,7 +22,6 @@ class PostFormTests(TestCase):
         cls.authorized_user.force_login(cls.user)
         cls.authorized_follower = Client()
         cls.authorized_follower.force_login(cls.follower)
-        Follow.objects.create(author=cls.user, user=cls.follower)
         cls.first_group = Group.objects.create(
             title=consts.FIRST_GROUP_NAME,
             slug=consts.FIRST_GROUP_SLUG,
@@ -109,7 +108,8 @@ class PostFormTests(TestCase):
         response = self.authorized_user.post(self.POST_EDIT_URL,
                                              data=form_data, follow=True)
         post = response.context["post"]
-        self.assertEqual(post, self.post)
+        self.assertEqual(post.text, consts.POST_NEW_TEXT)
+        self.assertEqual(post.group.id, self.second_group.id)
 
     def test_client_not_author_edit_post(self):
         CHECK_CLIENTS_NOT_AUTHOR = {
@@ -125,6 +125,5 @@ class PostFormTests(TestCase):
             with self.subTest(msg=name):
                 client.post(self.POST_EDIT_URL,
                             data=form_data, follow=True)
-                self.assertEqual(Post.objects.count(), 1)
-                post = Post.objects.filter(id=self.post.id)[0]
+                post = Post.objects.get(id=self.post.id)
                 self.assertEqual(post, self.post)
