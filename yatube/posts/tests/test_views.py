@@ -68,7 +68,7 @@ class PostFormTests(TestCase):
         for name, (url, client) in CHECK_CONTENT.items():
             with self.subTest(url=url, msg=name):
                 context = client.get(url).context
-                if context.get("post"):
+                if "post" in context:
                     post = context["post"]
                 else:
                     self.assertEqual(len(context["page"]), 1)
