@@ -19,15 +19,16 @@ class PostFormTests(TestCase):
         cls.authorized_user.force_login(cls.user)
         cls.authorized_follower = Client()
         cls.authorized_follower.force_login(cls.follower)
-        Follow.objects.create(author=cls.user, user=cls.follower)
         cls.post = Post.objects.create(text=consts.POST_TEXT, author=cls.user)
 
     def test_follow(self):
+        self.authorized_follower.get(consts.PROFILE_FOLLOW_URL)
         self.assertTrue(
             Follow.objects.filter(author=self.user,
                                   user=self.follower).exists())
 
     def test_unfollow(self):
+        self.authorized_follower.get(consts.PROFILE_FOLLOW_URL)
         self.authorized_follower.get(consts.PROFILE_UNFOLLOW_URL)
         self.assertFalse(
             Follow.objects.filter(author=self.user,
