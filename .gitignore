@@ -132,3 +132,5 @@ dmypy.json
 sent_emails/
 static/
 media/
+.DS_Store
+yatube/.DS_Store
